@@ -1,0 +1,36 @@
+--- a/net/minecraft/world/level/block/entity/TileEntityCampfire.java
++++ b/net/minecraft/world/level/block/entity/TileEntityCampfire.java
+@@ -21,6 +21,12 @@
+ import net.minecraft.world.level.block.BlockCampfire;
+ import net.minecraft.world.level.block.state.IBlockData;
+ 
++// CraftBukkit start
++import org.bukkit.craftbukkit.block.CraftBlock;
++import org.bukkit.craftbukkit.inventory.CraftItemStack;
++import org.bukkit.event.block.BlockCookEvent;
++// CraftBukkit end
++
+ public class TileEntityCampfire extends TileEntity implements Clearable, ITickable {
+ 
+     private final NonNullList<ItemStack> items;
+@@ -72,6 +78,20 @@
+                     }).orElse(itemstack);
+                     BlockPosition blockposition = this.getPosition();
+ 
++                    // CraftBukkit start - fire BlockCookEvent
++                    CraftItemStack source = CraftItemStack.asCraftMirror(itemstack);
++                    org.bukkit.inventory.ItemStack result = CraftItemStack.asBukkitCopy(itemstack1);
++
++                    BlockCookEvent blockCookEvent = new BlockCookEvent(CraftBlock.at(this.world, this.position), source, result);
++                    this.world.getServer().getPluginManager().callEvent(blockCookEvent);
++
++                    if (blockCookEvent.isCancelled()) {
++                        return;
++                    }
++
++                    result = blockCookEvent.getResult();
++                    itemstack1 = CraftItemStack.asNMSCopy(result);
++                    // CraftBukkit end
+                     InventoryUtils.dropItem(this.world, (double) blockposition.getX(), (double) blockposition.getY(), (double) blockposition.getZ(), itemstack1);
+                     this.items.set(i, ItemStack.b);
+                     this.k();

@@ -1,0 +1,35 @@
+--- a/net/minecraft/world/item/ItemBow.java
++++ b/net/minecraft/world/item/ItemBow.java
+@@ -61,6 +61,14 @@
+                         if (EnchantmentManager.getEnchantmentLevel(Enchantments.ARROW_FIRE, itemstack) > 0) {
+                             entityarrow.setOnFire(100);
+                         }
++                        // CraftBukkit start
++                        org.bukkit.event.entity.EntityShootBowEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callEntityShootBowEvent(entityhuman, itemstack, itemstack1, entityarrow, entityhuman.getRaisedHand(), f, !flag1);
++                        if (event.isCancelled()) {
++                            event.getProjectile().remove();
++                            return;
++                        }
++                        flag1 = !event.shouldConsumeItem();
++                        // CraftBukkit end
+ 
+                         itemstack.damage(1, entityhuman, (entityhuman1) -> {
+                             entityhuman1.broadcastItemBreak(entityhuman.getRaisedHand());
+@@ -69,7 +77,16 @@
+                             entityarrow.fromPlayer = EntityArrow.PickupStatus.CREATIVE_ONLY;
+                         }
+ 
+-                        world.addEntity(entityarrow);
++                        // CraftBukkit start
++                        if (event.getProjectile() == entityarrow.getBukkitEntity()) {
++                            if (!world.addEntity(entityarrow)) {
++                                if (entityhuman instanceof net.minecraft.server.level.EntityPlayer) {
++                                    ((net.minecraft.server.level.EntityPlayer) entityhuman).getBukkitEntity().updateInventory();
++                                }
++                                return;
++                            }
++                        }
++                        // CraftBukkit end
+                     }
+ 
+                     world.playSound((EntityHuman) null, entityhuman.locX(), entityhuman.locY(), entityhuman.locZ(), SoundEffects.ENTITY_ARROW_SHOOT, SoundCategory.PLAYERS, 1.0F, 1.0F / (ItemBow.RANDOM.nextFloat() * 0.4F + 1.2F) + f * 0.5F);

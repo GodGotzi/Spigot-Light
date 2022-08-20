@@ -1,0 +1,79 @@
+--- a/net/minecraft/world/entity/projectile/EntityFireworks.java
++++ b/net/minecraft/world/entity/projectile/EntityFireworks.java
+@@ -29,6 +29,8 @@
+ import net.minecraft.world.phys.MovingObjectPositionEntity;
+ import net.minecraft.world.phys.Vec3D;
+ 
++import org.bukkit.craftbukkit.event.CraftEventFactory; // CraftBukkit
++
+ public class EntityFireworks extends IProjectile {
+ 
+     public static final DataWatcherObject<ItemStack> FIREWORK_ITEM = DataWatcher.a(EntityFireworks.class, DataWatcherRegistry.g);
+@@ -130,7 +132,7 @@
+         MovingObjectPosition movingobjectposition = ProjectileHelper.a((Entity) this, this::a);
+ 
+         if (!this.noclip) {
+-            this.a(movingobjectposition);
++            this.preOnHit(movingobjectposition); // CraftBukkit - projectile hit event
+             this.impulse = true;
+         }
+ 
+@@ -145,7 +147,11 @@
+         }
+ 
+         if (!this.world.isClientSide && this.ticksFlown > this.expectedLifespan) {
+-            this.explode();
++            // CraftBukkit start
++            if (!org.bukkit.craftbukkit.event.CraftEventFactory.callFireworkExplodeEvent(this).isCancelled()) {
++                this.explode();
++            }
++            // CraftBukkit end
+         }
+ 
+     }
+@@ -160,7 +166,11 @@
+     protected void a(MovingObjectPositionEntity movingobjectpositionentity) {
+         super.a(movingobjectpositionentity);
+         if (!this.world.isClientSide) {
+-            this.explode();
++            // CraftBukkit start
++            if (!org.bukkit.craftbukkit.event.CraftEventFactory.callFireworkExplodeEvent(this).isCancelled()) {
++                this.explode();
++            }
++            // CraftBukkit end
+         }
+     }
+ 
+@@ -170,7 +180,11 @@
+ 
+         this.world.getType(blockposition).a(this.world, blockposition, (Entity) this);
+         if (!this.world.s_() && this.hasExplosions()) {
+-            this.explode();
++            // CraftBukkit start
++            if (!org.bukkit.craftbukkit.event.CraftEventFactory.callFireworkExplodeEvent(this).isCancelled()) {
++                this.explode();
++            }
++            // CraftBukkit end
+         }
+ 
+         super.a(movingobjectpositionblock);
+@@ -196,7 +210,9 @@
+ 
+         if (f > 0.0F) {
+             if (this.ridingEntity != null) {
++                CraftEventFactory.entityDamage = this; // CraftBukkit
+                 this.ridingEntity.damageEntity(DamageSource.a(this, this.getShooter()), 5.0F + (float) (nbttaglist.size() * 2));
++                CraftEventFactory.entityDamage = null; // CraftBukkit
+             }
+ 
+             double d0 = 5.0D;
+@@ -223,7 +239,9 @@
+                     if (flag) {
+                         float f1 = f * (float) Math.sqrt((5.0D - (double) this.g((Entity) entityliving)) / 5.0D);
+ 
++                        CraftEventFactory.entityDamage = this; // CraftBukkit
+                         entityliving.damageEntity(DamageSource.a(this, this.getShooter()), f1);
++                        CraftEventFactory.entityDamage = null; // CraftBukkit
+                     }
+                 }
+             }

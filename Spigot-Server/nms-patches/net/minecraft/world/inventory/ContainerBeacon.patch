@@ -1,0 +1,58 @@
+--- a/net/minecraft/world/inventory/ContainerBeacon.java
++++ b/net/minecraft/world/inventory/ContainerBeacon.java
+@@ -8,12 +8,21 @@
+ import net.minecraft.world.item.ItemStack;
+ import net.minecraft.world.level.block.Blocks;
+ 
++// CraftBukkit start
++import net.minecraft.world.entity.player.PlayerInventory;
++import org.bukkit.craftbukkit.inventory.CraftInventoryView;
++// CraftBukkit end
++
+ public class ContainerBeacon extends Container {
+ 
+     private final IInventory beacon;
+     private final ContainerBeacon.SlotBeacon d;
+     private final ContainerAccess containerAccess;
+     private final IContainerProperties containerProperties;
++    // CraftBukkit start
++    private CraftInventoryView bukkitEntity = null;
++    private PlayerInventory player;
++    // CraftBukkit end
+ 
+     public ContainerBeacon(int i, IInventory iinventory) {
+         this(i, iinventory, new ContainerProperties(3), ContainerAccess.a);
+@@ -21,6 +30,7 @@
+ 
+     public ContainerBeacon(int i, IInventory iinventory, IContainerProperties icontainerproperties, ContainerAccess containeraccess) {
+         super(Containers.BEACON, i);
++        player = (PlayerInventory) iinventory; // CraftBukkit - TODO: check this
+         this.beacon = new InventorySubcontainer(1) {
+             @Override
+             public boolean b(int j, ItemStack itemstack) {
+@@ -70,6 +80,7 @@
+ 
+     @Override
+     public boolean canUse(EntityHuman entityhuman) {
++        if (!this.checkReachable) return true; // CraftBukkit
+         return a(this.containerAccess, entityhuman, Blocks.BEACON);
+     }
+ 
+@@ -151,4 +162,17 @@
+             return 1;
+         }
+     }
++
++    // CraftBukkit start
++    @Override
++    public CraftInventoryView getBukkitView() {
++        if (bukkitEntity != null) {
++            return bukkitEntity;
++        }
++
++        org.bukkit.craftbukkit.inventory.CraftInventory inventory = new org.bukkit.craftbukkit.inventory.CraftInventoryBeacon(this.beacon);
++        bukkitEntity = new CraftInventoryView(this.player.player.getBukkitEntity(), inventory, this);
++        return bukkitEntity;
++    }
++    // CraftBukkit end
+ }

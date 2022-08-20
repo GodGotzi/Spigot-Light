@@ -1,0 +1,84 @@
+--- a/net/minecraft/world/entity/monster/EntityCreeper.java
++++ b/net/minecraft/world/entity/monster/EntityCreeper.java
+@@ -38,13 +38,19 @@
+ import net.minecraft.world.level.IMaterial;
+ import net.minecraft.world.level.World;
+ 
++// CraftBukkit start
++import org.bukkit.craftbukkit.event.CraftEventFactory;
++import org.bukkit.event.entity.CreatureSpawnEvent;
++import org.bukkit.event.entity.ExplosionPrimeEvent;
++// CraftBukkit end
++
+ public class EntityCreeper extends EntityMonster {
+ 
+     private static final DataWatcherObject<Integer> b = DataWatcher.a(EntityCreeper.class, DataWatcherRegistry.b);
+     private static final DataWatcherObject<Boolean> POWERED = DataWatcher.a(EntityCreeper.class, DataWatcherRegistry.i);
+     private static final DataWatcherObject<Boolean> d = DataWatcher.a(EntityCreeper.class, DataWatcherRegistry.i);
+     private int bo;
+-    private int fuseTicks;
++    public int fuseTicks; // PAIL
+     public int maxFuseTicks = 30;
+     public int explosionRadius = 3;
+     private int bs;
+@@ -200,9 +206,19 @@
+     @Override
+     public void onLightningStrike(WorldServer worldserver, EntityLightning entitylightning) {
+         super.onLightningStrike(worldserver, entitylightning);
+-        this.datawatcher.set(EntityCreeper.POWERED, true);
++        // CraftBukkit start
++        if (CraftEventFactory.callCreeperPowerEvent(this, entitylightning, org.bukkit.event.entity.CreeperPowerEvent.PowerCause.LIGHTNING).isCancelled()) {
++            return;
++        }
++
++        this.setPowered(true);
+     }
+ 
++    public void setPowered(boolean powered) {
++        this.datawatcher.set(EntityCreeper.POWERED, powered);
++    }
++    // CraftBukkit end
++
+     @Override
+     protected EnumInteractionResult b(EntityHuman entityhuman, EnumHand enumhand) {
+         ItemStack itemstack = entityhuman.b(enumhand);
+@@ -227,10 +243,18 @@
+             Explosion.Effect explosion_effect = this.world.getGameRules().getBoolean(GameRules.MOB_GRIEFING) ? Explosion.Effect.DESTROY : Explosion.Effect.NONE;
+             float f = this.isPowered() ? 2.0F : 1.0F;
+ 
+-            this.killed = true;
+-            this.world.explode(this, this.locX(), this.locY(), this.locZ(), (float) this.explosionRadius * f, explosion_effect);
+-            this.die();
+-            this.createEffectCloud();
++            // CraftBukkit start
++            ExplosionPrimeEvent event = new ExplosionPrimeEvent(this.getBukkitEntity(), this.explosionRadius * f, false);
++            this.world.getServer().getPluginManager().callEvent(event);
++            if (!event.isCancelled()) {
++                this.killed = true;
++                this.world.createExplosion(this, this.locX(), this.locY(), this.locZ(), event.getRadius(), event.getFire(), explosion_effect);
++                this.die();
++                this.createEffectCloud();
++            } else {
++                fuseTicks = 0;
++            }
++            // CraftBukkit end
+         }
+ 
+     }
+@@ -241,6 +265,7 @@
+         if (!collection.isEmpty()) {
+             EntityAreaEffectCloud entityareaeffectcloud = new EntityAreaEffectCloud(this.world, this.locX(), this.locY(), this.locZ());
+ 
++            entityareaeffectcloud.setSource(this); // CraftBukkit
+             entityareaeffectcloud.setRadius(2.5F);
+             entityareaeffectcloud.setRadiusOnUse(-0.5F);
+             entityareaeffectcloud.setWaitTime(10);
+@@ -254,7 +279,7 @@
+                 entityareaeffectcloud.addEffect(new MobEffect(mobeffect));
+             }
+ 
+-            this.world.addEntity(entityareaeffectcloud);
++            this.world.addEntity(entityareaeffectcloud, CreatureSpawnEvent.SpawnReason.EXPLOSION); // CraftBukkit
+         }
+ 
+     }

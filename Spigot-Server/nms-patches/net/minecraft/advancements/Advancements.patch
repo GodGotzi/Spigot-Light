@@ -1,0 +1,11 @@
+--- a/net/minecraft/advancements/Advancements.java
++++ b/net/minecraft/advancements/Advancements.java
+@@ -73,7 +73,7 @@
+             }
+         }
+ 
+-        Advancements.LOGGER.info("Loaded {} advancements", this.advancements.size());
++        // Advancements.LOGGER.info("Loaded {} advancements", this.advancements.size()); // CraftBukkit - moved to AdvancementDataWorld#reload
+     }
+ 
+     public Iterable<Advancement> b() {

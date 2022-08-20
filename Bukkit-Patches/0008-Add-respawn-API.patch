@@ -1,0 +1,27 @@
+From add2f2bb9543b6910e99d3b3e5497037b69bb010 Mon Sep 17 00:00:00 2001
+From: ninja- <xninja@openmailbox.org>
+Date: Tue, 8 Oct 2013 14:35:58 +0200
+Subject: [PATCH] Add respawn API.
+
+
+diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
+index aca68096..2ec97673 100644
+--- a/src/main/java/org/bukkit/entity/Player.java
++++ b/src/main/java/org/bukkit/entity/Player.java
+@@ -1301,6 +1301,13 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+         public void setCollidesWithEntities(boolean collides) {
+             throw new UnsupportedOperationException("Not supported yet.");
+         }
++
++        /**
++         * Respawns the player if dead.
++         */
++        public void respawn() {
++            throw new UnsupportedOperationException("Not supported yet.");
++        }
+     }
+ 
+     @NotNull
+-- 
+2.25.1
+

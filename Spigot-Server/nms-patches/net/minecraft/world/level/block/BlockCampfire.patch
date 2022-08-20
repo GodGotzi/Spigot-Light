@@ -1,0 +1,14 @@
+--- a/net/minecraft/world/level/block/BlockCampfire.java
++++ b/net/minecraft/world/level/block/BlockCampfire.java
+@@ -186,6 +186,11 @@
+             if (flag && !(Boolean) iblockdata.get(BlockCampfire.LIT) && !(Boolean) iblockdata.get(BlockCampfire.d)) {
+                 BlockPosition blockposition = movingobjectpositionblock.getBlockPosition();
+ 
++                // CraftBukkit start
++                if (org.bukkit.craftbukkit.event.CraftEventFactory.callBlockIgniteEvent(world, blockposition, iprojectile).isCancelled()) {
++                    return;
++                }
++                // CraftBukkit end
+                 world.setTypeAndData(blockposition, (IBlockData) iblockdata.set(BlockProperties.r, true), 11);
+             }
+         }

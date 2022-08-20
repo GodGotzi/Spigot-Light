@@ -1,0 +1,161 @@
+From 0fd28f328c1201f14816c89c812643c7ff8d939b Mon Sep 17 00:00:00 2001
+From: md_5 <git@md-5.net>
+Date: Mon, 15 May 2017 15:16:15 +1000
+Subject: [PATCH] Skeleton API Implementations
+
+
+diff --git a/src/main/java/org/bukkit/Bukkit.java b/src/main/java/org/bukkit/Bukkit.java
+index ec51df8d..7c715fdc 100644
+--- a/src/main/java/org/bukkit/Bukkit.java
++++ b/src/main/java/org/bukkit/Bukkit.java
+@@ -1583,4 +1583,9 @@ public final class Bukkit {
+     public static UnsafeValues getUnsafe() {
+         return server.getUnsafe();
+     }
++
++    @NotNull
++    public static Server.Spigot spigot() {
++        return server.spigot();
++    }
+ }
+diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
+index d5aafa0e..afe2047b 100644
+--- a/src/main/java/org/bukkit/Server.java
++++ b/src/main/java/org/bukkit/Server.java
+@@ -1335,4 +1335,13 @@ public interface Server extends PluginMessageRecipient {
+     @Deprecated
+     @NotNull
+     UnsafeValues getUnsafe();
++
++    // Spigot start
++    public class Spigot {
++
++    }
++
++    @NotNull
++    Spigot spigot();
++    // Spigot end
+ }
+diff --git a/src/main/java/org/bukkit/World.java b/src/main/java/org/bukkit/World.java
+index e3968d5f..da775a6a 100644
+--- a/src/main/java/org/bukkit/World.java
++++ b/src/main/java/org/bukkit/World.java
+@@ -2381,6 +2381,15 @@ public interface World extends PluginMessageRecipient, Metadatable {
+     @Nullable
+     public Location locateNearestStructure(@NotNull Location origin, @NotNull StructureType structureType, int radius, boolean findUnexplored);
+ 
++    // Spigot start
++    public class Spigot {
++
++    }
++
++    @NotNull
++    Spigot spigot();
++    // Spigot end
++
+     /**
+      * Finds the nearest raid close to the given location.
+      *
+diff --git a/src/main/java/org/bukkit/command/CommandSender.java b/src/main/java/org/bukkit/command/CommandSender.java
+index b76cf67b..6d9708dc 100644
+--- a/src/main/java/org/bukkit/command/CommandSender.java
++++ b/src/main/java/org/bukkit/command/CommandSender.java
+@@ -53,4 +53,13 @@ public interface CommandSender extends Permissible {
+      */
+     @NotNull
+     public String getName();
++
++    // Spigot start
++    public class Spigot {
++
++    }
++
++    @NotNull
++    Spigot spigot();
++    // Spigot end
+ }
+diff --git a/src/main/java/org/bukkit/entity/Entity.java b/src/main/java/org/bukkit/entity/Entity.java
+index 28e2ef43..b71530e9 100644
+--- a/src/main/java/org/bukkit/entity/Entity.java
++++ b/src/main/java/org/bukkit/entity/Entity.java
+@@ -592,4 +592,14 @@ public interface Entity extends Metadatable, CommandSender, Nameable, Persistent
+      */
+     @NotNull
+     Pose getPose();
++
++    // Spigot start
++    public class Spigot extends CommandSender.Spigot {
++
++    }
++
++    @NotNull
++    @Override
++    Spigot spigot();
++    // Spigot end
+ }
+diff --git a/src/main/java/org/bukkit/entity/LightningStrike.java b/src/main/java/org/bukkit/entity/LightningStrike.java
+index 76aad05f..4d308c5a 100644
+--- a/src/main/java/org/bukkit/entity/LightningStrike.java
++++ b/src/main/java/org/bukkit/entity/LightningStrike.java
+@@ -1,5 +1,7 @@
+ package org.bukkit.entity;
+ 
++import org.jetbrains.annotations.NotNull;
++
+ /**
+  * Represents an instance of a lightning strike. May or may not do damage.
+  */
+@@ -12,4 +14,13 @@ public interface LightningStrike extends Entity {
+      */
+     public boolean isEffect();
+ 
++    // Spigot start
++    public class Spigot extends Entity.Spigot {
++
++    }
++
++    @NotNull
++    @Override
++    Spigot spigot();
++    // Spigot end
+ }
+diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
+index 0574d407..e04b4e0a 100644
+--- a/src/main/java/org/bukkit/entity/Player.java
++++ b/src/main/java/org/bukkit/entity/Player.java
+@@ -1264,4 +1264,14 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+      * @param book The book to open for this player
+      */
+     public void openBook(@NotNull ItemStack book);
++
++    // Spigot start
++    public class Spigot extends Entity.Spigot {
++
++    }
++
++    @NotNull
++    @Override
++    Spigot spigot();
++    // Spigot end
+ }
+diff --git a/src/main/java/org/bukkit/inventory/meta/BookMeta.java b/src/main/java/org/bukkit/inventory/meta/BookMeta.java
+index d650da50..f740bebe 100644
+--- a/src/main/java/org/bukkit/inventory/meta/BookMeta.java
++++ b/src/main/java/org/bukkit/inventory/meta/BookMeta.java
+@@ -185,4 +185,13 @@ public interface BookMeta extends ItemMeta {
+     @Override
+     @NotNull
+     BookMeta clone();
++
++    // Spigot start
++    public class Spigot {
++
++    }
++
++    @NotNull
++    Spigot spigot();
++    // Spigot end
+ }
+-- 
+2.25.1
+

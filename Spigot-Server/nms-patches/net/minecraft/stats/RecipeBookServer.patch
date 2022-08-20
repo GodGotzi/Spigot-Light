@@ -1,0 +1,28 @@
+--- a/net/minecraft/stats/RecipeBookServer.java
++++ b/net/minecraft/stats/RecipeBookServer.java
+@@ -20,6 +20,8 @@
+ import org.apache.logging.log4j.LogManager;
+ import org.apache.logging.log4j.Logger;
+ 
++import org.bukkit.craftbukkit.event.CraftEventFactory; // CraftBukkit
++
+ public class RecipeBookServer extends RecipeBook {
+ 
+     private static final Logger LOGGER = LogManager.getLogger();
+@@ -35,7 +37,7 @@
+             IRecipe<?> irecipe = (IRecipe) iterator.next();
+             MinecraftKey minecraftkey = irecipe.getKey();
+ 
+-            if (!this.recipes.contains(minecraftkey) && !irecipe.isComplex()) {
++            if (!this.recipes.contains(minecraftkey) && !irecipe.isComplex() && CraftEventFactory.handlePlayerRecipeListUpdateEvent(entityplayer, minecraftkey)) { // CraftBukkit
+                 this.a(minecraftkey);
+                 this.d(minecraftkey);
+                 list.add(minecraftkey);
+@@ -69,6 +71,7 @@
+     }
+ 
+     private void a(PacketPlayOutRecipes.Action packetplayoutrecipes_action, EntityPlayer entityplayer, List<MinecraftKey> list) {
++        if (entityplayer.playerConnection == null) return; // SPIGOT-4478 during PlayerLoginEvent
+         entityplayer.playerConnection.sendPacket(new PacketPlayOutRecipes(packetplayoutrecipes_action, list, Collections.emptyList(), this.a()));
+     }
+ 

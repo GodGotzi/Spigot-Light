@@ -1,0 +1,11 @@
+--- a/net/minecraft/world/entity/ai/goal/target/PathfinderGoalDefendVillage.java
++++ b/net/minecraft/world/entity/ai/goal/target/PathfinderGoalDefendVillage.java
+@@ -56,7 +56,7 @@
+ 
+     @Override
+     public void c() {
+-        this.a.setGoalTarget(this.b);
++        this.a.setGoalTarget(this.b, org.bukkit.event.entity.EntityTargetEvent.TargetReason.DEFEND_VILLAGE, true); // CraftBukkit - reason
+         super.c();
+     }
+ }

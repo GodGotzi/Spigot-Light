@@ -1,0 +1,71 @@
+--- a/net/minecraft/world/inventory/ContainerFurnace.java
++++ b/net/minecraft/world/inventory/ContainerFurnace.java
+@@ -14,6 +14,11 @@
+ import net.minecraft.world.level.World;
+ import net.minecraft.world.level.block.entity.TileEntityFurnace;
+ 
++// CraftBukkit start
++import org.bukkit.craftbukkit.inventory.CraftInventoryFurnace;
++import org.bukkit.craftbukkit.inventory.CraftInventoryView;
++// CraftBukkit end
++
+ public abstract class ContainerFurnace extends ContainerRecipeBook<IInventory> {
+ 
+     private final IInventory furnace;
+@@ -22,6 +27,22 @@
+     private final Recipes<? extends RecipeCooking> f;
+     private final RecipeBookType g;
+ 
++    // CraftBukkit start
++    private CraftInventoryView bukkitEntity = null;
++    private PlayerInventory player;
++
++    @Override
++    public CraftInventoryView getBukkitView() {
++        if (bukkitEntity != null) {
++            return bukkitEntity;
++        }
++
++        CraftInventoryFurnace inventory = new CraftInventoryFurnace((TileEntityFurnace) this.furnace);
++        bukkitEntity = new CraftInventoryView(this.player.player.getBukkitEntity(), inventory, this);
++        return bukkitEntity;
++    }
++    // CraftBukkit end
++
+     protected ContainerFurnace(Containers<?> containers, Recipes<? extends RecipeCooking> recipes, RecipeBookType recipebooktype, int i, PlayerInventory playerinventory) {
+         this(containers, recipes, recipebooktype, i, playerinventory, new InventorySubcontainer(3), new ContainerProperties(4));
+     }
+@@ -38,6 +59,7 @@
+         this.a(new Slot(iinventory, 0, 56, 17));
+         this.a((Slot) (new SlotFurnaceFuel(this, iinventory, 1, 56, 53)));
+         this.a((Slot) (new SlotFurnaceResult(playerinventory.player, iinventory, 2, 116, 35)));
++        this.player = playerinventory; // CraftBukkit - save player
+ 
+         int j;
+ 
+@@ -69,7 +91,7 @@
+ 
+     @Override
+     public void a(boolean flag, IRecipe<?> irecipe, EntityPlayer entityplayer) {
+-        (new AutoRecipeFurnace<>(this)).a(entityplayer, irecipe, flag);
++        (new AutoRecipeFurnace(this)).a(entityplayer, irecipe, flag); // CraftBukkit - decompile error
+     }
+ 
+     @Override
+@@ -94,6 +116,7 @@
+ 
+     @Override
+     public boolean canUse(EntityHuman entityhuman) {
++        if (!this.checkReachable) return true; // CraftBukkit
+         return this.furnace.a(entityhuman);
+     }
+ 
+@@ -149,7 +172,7 @@
+     }
+ 
+     protected boolean a(ItemStack itemstack) {
+-        return this.c.getCraftingManager().craft(this.f, new InventorySubcontainer(new ItemStack[]{itemstack}), this.c).isPresent();
++        return this.c.getCraftingManager().craft((Recipes<RecipeCooking>) this.f, new InventorySubcontainer(new ItemStack[]{itemstack}), this.c).isPresent(); // Eclipse fail
+     }
+ 
+     protected boolean b(ItemStack itemstack) {

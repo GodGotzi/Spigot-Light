@@ -1,0 +1,90 @@
+--- a/net/minecraft/world/inventory/ContainerWorkbench.java
++++ b/net/minecraft/world/inventory/ContainerWorkbench.java
+@@ -14,12 +14,21 @@
+ import net.minecraft.world.level.World;
+ import net.minecraft.world.level.block.Blocks;
+ 
++// CraftBukkit start
++import org.bukkit.craftbukkit.inventory.CraftInventoryCrafting;
++import org.bukkit.craftbukkit.inventory.CraftInventoryView;
++// CraftBukkit end
++
+ public class ContainerWorkbench extends ContainerRecipeBook<InventoryCrafting> {
+ 
+     private final InventoryCrafting craftInventory;
+     private final InventoryCraftResult resultInventory;
+     public final ContainerAccess containerAccess;
+     private final EntityHuman f;
++    // CraftBukkit start
++    private CraftInventoryView bukkitEntity = null;
++    private PlayerInventory player;
++    // CraftBukkit end
+ 
+     public ContainerWorkbench(int i, PlayerInventory playerinventory) {
+         this(i, playerinventory, ContainerAccess.a);
+@@ -27,8 +36,12 @@
+ 
+     public ContainerWorkbench(int i, PlayerInventory playerinventory, ContainerAccess containeraccess) {
+         super(Containers.CRAFTING, i);
+-        this.craftInventory = new InventoryCrafting(this, 3, 3);
++        // CraftBukkit start - Switched order of IInventory construction and stored player
+         this.resultInventory = new InventoryCraftResult();
++        this.craftInventory = new InventoryCrafting(this, 3, 3, playerinventory.player); // CraftBukkit - pass player
++        this.craftInventory.resultInventory = this.resultInventory;
++        this.player = playerinventory;
++        // CraftBukkit end
+         this.containerAccess = containeraccess;
+         this.f = playerinventory.player;
+         this.a((Slot) (new SlotResult(playerinventory.player, this.craftInventory, this.resultInventory, 0, 124, 35)));
+@@ -54,7 +67,7 @@
+ 
+     }
+ 
+-    protected static void a(int i, World world, EntityHuman entityhuman, InventoryCrafting inventorycrafting, InventoryCraftResult inventorycraftresult) {
++    protected static void a(int i, World world, EntityHuman entityhuman, InventoryCrafting inventorycrafting, InventoryCraftResult inventorycraftresult, Container container) { // CraftBukkit
+         if (!world.isClientSide) {
+             EntityPlayer entityplayer = (EntityPlayer) entityhuman;
+             ItemStack itemstack = ItemStack.b;
+@@ -67,6 +80,7 @@
+                     itemstack = recipecrafting.a(inventorycrafting);
+                 }
+             }
++            itemstack = org.bukkit.craftbukkit.event.CraftEventFactory.callPreCraftEvent(inventorycrafting, inventorycraftresult, itemstack, container.getBukkitView(), false); // CraftBukkit
+ 
+             inventorycraftresult.setItem(0, itemstack);
+             entityplayer.playerConnection.sendPacket(new PacketPlayOutSetSlot(i, 0, itemstack));
+@@ -76,7 +90,7 @@
+     @Override
+     public void a(IInventory iinventory) {
+         this.containerAccess.a((world, blockposition) -> {
+-            a(this.windowId, world, this.f, this.craftInventory, this.resultInventory);
++            a(this.windowId, world, this.f, this.craftInventory, this.resultInventory, this); // CraftBukkit
+         });
+     }
+ 
+@@ -106,6 +120,7 @@
+ 
+     @Override
+     public boolean canUse(EntityHuman entityhuman) {
++        if (!this.checkReachable) return true; // CraftBukkit
+         return a(this.containerAccess, entityhuman, Blocks.CRAFTING_TABLE);
+     }
+ 
+@@ -180,4 +195,17 @@
+     public int h() {
+         return this.craftInventory.f();
+     }
++
++    // CraftBukkit start
++    @Override
++    public CraftInventoryView getBukkitView() {
++        if (bukkitEntity != null) {
++            return bukkitEntity;
++        }
++
++        CraftInventoryCrafting inventory = new CraftInventoryCrafting(this.craftInventory, this.resultInventory);
++        bukkitEntity = new CraftInventoryView(this.player.player.getBukkitEntity(), inventory, this);
++        return bukkitEntity;
++    }
++    // CraftBukkit end
+ }

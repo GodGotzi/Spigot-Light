@@ -1,0 +1,38 @@
+--- a/net/minecraft/world/entity/raid/EntityRaider.java
++++ b/net/minecraft/world/entity/raid/EntityRaider.java
+@@ -167,7 +167,7 @@
+                     MobEffect mobeffect1 = new MobEffect(MobEffects.BAD_OMEN, 120000, i, false, false, true);
+ 
+                     if (!this.world.getGameRules().getBoolean(GameRules.DISABLE_RAIDS)) {
+-                        entityhuman.addEffect(mobeffect1);
++                        entityhuman.addEffect(mobeffect1, org.bukkit.event.entity.EntityPotionEffectEvent.Cause.PATROL_CAPTAIN); // CraftBukkit
+                     }
+                 }
+             }
+@@ -434,7 +434,7 @@
+             while (iterator.hasNext()) {
+                 EntityRaider entityraider = (EntityRaider) iterator.next();
+ 
+-                entityraider.setGoalTarget(this.c.getGoalTarget());
++                entityraider.setGoalTarget(this.c.getGoalTarget(), org.bukkit.event.entity.EntityTargetEvent.TargetReason.FOLLOW_LEADER, true); // CraftBukkit
+             }
+ 
+         }
+@@ -451,7 +451,7 @@
+                 while (iterator.hasNext()) {
+                     EntityRaider entityraider = (EntityRaider) iterator.next();
+ 
+-                    entityraider.setGoalTarget(entityliving);
++                    entityraider.setGoalTarget(this.c.getGoalTarget(), org.bukkit.event.entity.EntityTargetEvent.TargetReason.FOLLOW_LEADER, true); // CraftBukkit
+                     entityraider.setAggressive(true);
+                 }
+ 
+@@ -525,7 +525,7 @@
+ 
+         private final T b;
+ 
+-        public b(EntityRaider entityraider) {
++        public b(T entityraider) { // CraftBukkit - decompile error
+             this.b = entityraider;
+             this.a(EnumSet.of(PathfinderGoal.Type.MOVE));
+         }

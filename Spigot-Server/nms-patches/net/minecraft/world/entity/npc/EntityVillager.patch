@@ -1,0 +1,133 @@
+--- a/net/minecraft/world/entity/npc/EntityVillager.java
++++ b/net/minecraft/world/entity/npc/EntityVillager.java
+@@ -89,6 +89,14 @@
+ import net.minecraft.world.phys.AxisAlignedBB;
+ import org.apache.logging.log4j.Logger;
+ 
++// CraftBukkit start
++import org.bukkit.Bukkit;
++import org.bukkit.craftbukkit.event.CraftEventFactory;
++import org.bukkit.entity.Villager;
++import org.bukkit.event.entity.EntityTransformEvent;
++import org.bukkit.event.entity.VillagerReplenishTradeEvent;
++// CraftBukkit end
++
+ public class EntityVillager extends EntityVillagerAbstract implements ReputationHandler, VillagerDataHolder {
+ 
+     private static final DataWatcherObject<VillagerData> br = DataWatcher.a(EntityVillager.class, DataWatcherRegistry.q);
+@@ -134,7 +142,7 @@
+ 
+     @Override
+     public BehaviorController<EntityVillager> getBehaviorController() {
+-        return super.getBehaviorController();
++        return (BehaviorController<EntityVillager>) super.getBehaviorController(); // CraftBukkit - decompile error
+     }
+ 
+     @Override
+@@ -153,7 +161,7 @@
+     public void c(WorldServer worldserver) {
+         BehaviorController<EntityVillager> behaviorcontroller = this.getBehaviorController();
+ 
+-        behaviorcontroller.b(worldserver, (EntityLiving) this);
++        behaviorcontroller.b(worldserver, this); // CraftBukkit - decompile error
+         this.bg = behaviorcontroller.h();
+         this.a(this.getBehaviorController());
+     }
+@@ -203,7 +211,7 @@
+     @Override
+     protected void mobTick() {
+         this.world.getMethodProfiler().enter("villagerBrain");
+-        this.getBehaviorController().a((WorldServer) this.world, (EntityLiving) this);
++        this.getBehaviorController().a((WorldServer) this.world, this); // CraftBukkit - decompile error
+         this.world.getMethodProfiler().exit();
+         if (this.bF) {
+             this.bF = false;
+@@ -217,7 +225,7 @@
+                     this.bu = false;
+                 }
+ 
+-                this.addEffect(new MobEffect(MobEffects.REGENERATION, 200, 0));
++                this.addEffect(new MobEffect(MobEffects.REGENERATION, 200, 0), org.bukkit.event.entity.EntityPotionEffectEvent.Cause.VILLAGER_TRADE); // CraftBukkit
+             }
+         }
+ 
+@@ -428,7 +436,14 @@
+             while (iterator.hasNext()) {
+                 MerchantRecipe merchantrecipe = (MerchantRecipe) iterator.next();
+ 
+-                merchantrecipe.increaseSpecialPrice(-MathHelper.d((float) i * merchantrecipe.getPriceMultiplier()));
++                // CraftBukkit start
++                int bonus = -MathHelper.d((float) i * merchantrecipe.getPriceMultiplier());
++                VillagerReplenishTradeEvent event = new VillagerReplenishTradeEvent((Villager) this.getBukkitEntity(), merchantrecipe.asBukkit(), bonus);
++                Bukkit.getPluginManager().callEvent(event);
++                if (!event.isCancelled()) {
++                    merchantrecipe.increaseSpecialPrice(event.getBonus());
++                }
++                // CraftBukkit end
+             }
+         }
+ 
+@@ -457,7 +472,7 @@
+     @Override
+     public void saveData(NBTTagCompound nbttagcompound) {
+         super.saveData(nbttagcompound);
+-        DataResult dataresult = VillagerData.a.encodeStart(DynamicOpsNBT.a, this.getVillagerData());
++        DataResult<NBTBase> dataresult = VillagerData.a.encodeStart(DynamicOpsNBT.a, this.getVillagerData()); // CraftBukkit - decompile error
+         Logger logger = EntityVillager.LOGGER;
+ 
+         logger.getClass();
+@@ -770,7 +785,12 @@
+             }
+ 
+             entitywitch.setPersistent();
+-            worldserver.addAllEntities(entitywitch);
++            // CraftBukkit start
++            if (CraftEventFactory.callEntityTransformEvent(this, entitywitch, EntityTransformEvent.TransformReason.LIGHTNING).isCancelled()) {
++                return;
++            }
++            worldserver.addAllEntities(entitywitch, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.LIGHTNING);
++            // CraftBukkit end
+             this.fq();
+             this.die();
+         } else {
+@@ -791,6 +811,13 @@
+                 return;
+             }
+ 
++            // CraftBukkit start
++            ItemStack remaining = new InventorySubcontainer(inventorysubcontainer).a(itemstack);
++            if (CraftEventFactory.callEntityPickupItemEvent(this, entityitem, remaining.getCount(), false).isCancelled()) {
++                return;
++            }
++            // CraftBukkit end
++
+             this.a(entityitem);
+             this.receive(entityitem, itemstack.getCount());
+             ItemStack itemstack1 = inventorysubcontainer.a(itemstack);
+@@ -903,7 +930,7 @@
+ 
+                 if (entityirongolem != null) {
+                     if (entityirongolem.a((GeneratorAccess) worldserver, EnumMobSpawn.MOB_SUMMONED) && entityirongolem.a((IWorldReader) worldserver)) {
+-                        worldserver.addAllEntities(entityirongolem);
++                        worldserver.addAllEntities(entityirongolem, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.VILLAGE_DEFENSE); // CraftBukkit
+                         return entityirongolem;
+                     }
+ 
+@@ -981,7 +1008,7 @@
+     @Override
+     public void entitySleep(BlockPosition blockposition) {
+         super.entitySleep(blockposition);
+-        this.bg.setMemory(MemoryModuleType.LAST_SLEPT, (Object) this.world.getTime());
++        this.bg.setMemory(MemoryModuleType.LAST_SLEPT, this.world.getTime()); // CraftBukkit - decompile error
+         this.bg.removeMemory(MemoryModuleType.WALK_TARGET);
+         this.bg.removeMemory(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE);
+     }
+@@ -989,7 +1016,7 @@
+     @Override
+     public void entityWakeup() {
+         super.entityWakeup();
+-        this.bg.setMemory(MemoryModuleType.LAST_WOKEN, (Object) this.world.getTime());
++        this.bg.setMemory(MemoryModuleType.LAST_WOKEN, this.world.getTime()); // CraftBukkit - decompile error
+     }
+ 
+     private boolean b(long i) {

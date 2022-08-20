@@ -1,0 +1,65 @@
+--- a/net/minecraft/world/inventory/ContainerStonecutter.java
++++ b/net/minecraft/world/inventory/ContainerStonecutter.java
+@@ -16,6 +16,13 @@
+ import net.minecraft.world.level.World;
+ import net.minecraft.world.level.block.Blocks;
+ 
++// CraftBukkit start
++import org.bukkit.Location;
++import org.bukkit.craftbukkit.inventory.CraftInventoryStonecutter;
++import org.bukkit.craftbukkit.inventory.CraftInventoryView;
++import org.bukkit.entity.Player;
++// CraftBukkit end
++
+ public class ContainerStonecutter extends Container {
+ 
+     private final ContainerAccess containerAccess;
+@@ -29,6 +36,21 @@
+     private Runnable l;
+     public final IInventory inventory;
+     private final InventoryCraftResult resultInventory;
++    // CraftBukkit start
++    private CraftInventoryView bukkitEntity = null;
++    private Player player;
++
++    @Override
++    public CraftInventoryView getBukkitView() {
++        if (bukkitEntity != null) {
++            return bukkitEntity;
++        }
++
++        CraftInventoryStonecutter inventory = new CraftInventoryStonecutter(this.inventory, this.resultInventory);
++        bukkitEntity = new CraftInventoryView(this.player, inventory, this);
++        return bukkitEntity;
++    }
++    // CraftBukkit end
+ 
+     public ContainerStonecutter(int i, PlayerInventory playerinventory) {
+         this(i, playerinventory, ContainerAccess.a);
+@@ -48,6 +70,13 @@
+                 ContainerStonecutter.this.a((IInventory) this);
+                 ContainerStonecutter.this.l.run();
+             }
++
++            // CraftBukkit start
++            @Override
++            public Location getLocation() {
++                return containeraccess.getLocation();
++            }
++            // CraftBukkit end
+         };
+         this.resultInventory = new InventoryCraftResult();
+         this.containerAccess = containeraccess;
+@@ -95,10 +124,12 @@
+         }
+ 
+         this.a(this.containerProperty);
++        player = (Player) playerinventory.player.getBukkitEntity(); // CraftBukkit
+     }
+ 
+     @Override
+     public boolean canUse(EntityHuman entityhuman) {
++        if (!this.checkReachable) return true; // CraftBukkit
+         return a(this.containerAccess, entityhuman, Blocks.STONECUTTER);
+     }
+ 

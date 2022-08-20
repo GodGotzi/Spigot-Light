@@ -1,0 +1,11 @@
+--- a/net/minecraft/world/entity/animal/horse/EntityLlamaTrader.java
++++ b/net/minecraft/world/entity/animal/horse/EntityLlamaTrader.java
+@@ -143,7 +143,7 @@
+ 
+         @Override
+         public void c() {
+-            this.e.setGoalTarget(this.c);
++            this.e.setGoalTarget(this.c, org.bukkit.event.entity.EntityTargetEvent.TargetReason.TARGET_ATTACKED_OWNER, true); // CraftBukkit
+             Entity entity = this.b.getLeashHolder();
+ 
+             if (entity instanceof EntityVillagerTrader) {

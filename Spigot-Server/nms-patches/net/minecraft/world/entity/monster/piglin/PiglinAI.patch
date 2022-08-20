@@ -1,0 +1,201 @@
+--- a/net/minecraft/world/entity/monster/piglin/PiglinAI.java
++++ b/net/minecraft/world/entity/monster/piglin/PiglinAI.java
+@@ -72,6 +72,13 @@
+ import net.minecraft.world.level.storage.loot.parameters.LootContextParameters;
+ import net.minecraft.world.phys.Vec3D;
+ 
++// CraftBukkit start
++import java.util.stream.Collectors;
++import org.bukkit.craftbukkit.event.CraftEventFactory;
++import org.bukkit.craftbukkit.inventory.CraftItemStack;
++import org.bukkit.event.entity.PiglinBarterEvent;
++// CraftBukkit end
++
+ public class PiglinAI {
+ 
+     public static final Item a = Items.GOLD_INGOT;
+@@ -114,7 +121,8 @@
+     private static void b(EntityPiglin entitypiglin, BehaviorController<EntityPiglin> behaviorcontroller) {
+         behaviorcontroller.a(Activity.FLIGHT, 10, ImmutableList.of(new BehaviorAttackTargetForget<>((entityliving) -> {
+             return !b(entitypiglin, entityliving);
+-        }), new BehaviorRunIf<>(PiglinAI::c, new BehaviorRetreat<>(5, 0.75F)), new BehaviorWalkAwayOutOfRange(1.0F), new BehaviorAttack(20), new BehaviorCrossbowAttack<>(), new BehaviorRememberHuntedHoglin<>(), new BehaviorRemoveMemory<>(PiglinAI::j, MemoryModuleType.ATTACK_TARGET)), MemoryModuleType.ATTACK_TARGET);
++            // CraftBukkit - decompile error
++        }), new BehaviorRunIf<>((l) -> PiglinAI.c((EntityLiving) l), new BehaviorRetreat<>(5, 0.75F)), new BehaviorWalkAwayOutOfRange(1.0F), new BehaviorAttack(20), new BehaviorCrossbowAttack<>(), new BehaviorRememberHuntedHoglin<>(), new BehaviorRemoveMemory<>(PiglinAI::j, MemoryModuleType.ATTACK_TARGET)), MemoryModuleType.ATTACK_TARGET);
+     }
+ 
+     private static void c(BehaviorController<EntityPiglin> behaviorcontroller) {
+@@ -132,7 +140,8 @@
+     }
+ 
+     private static void f(BehaviorController<EntityPiglin> behaviorcontroller) {
+-        behaviorcontroller.a(Activity.RIDE, 10, ImmutableList.of(new BehaviorStartRiding<>(0.8F), new BehaviorLookTarget(PiglinAI::b, 8.0F), new BehaviorRunIf<>(Entity::isPassenger, a()), new BehaviorStopRiding<>(8, PiglinAI::a)), MemoryModuleType.RIDE_TARGET);
++        // CraftBukkit - decompile error
++        behaviorcontroller.a(Activity.RIDE, 10, ImmutableList.of(new BehaviorStartRiding<>(0.8F), new BehaviorLookTarget(PiglinAI::b, 8.0F), new BehaviorRunIf<>(Entity::isPassenger, a()), new BehaviorStopRiding<EntityPiglin, Entity>(8, PiglinAI::a)), MemoryModuleType.RIDE_TARGET);
+     }
+ 
+     private static BehaviorGateSingle<EntityPiglin> a() {
+@@ -140,7 +149,8 @@
+     }
+ 
+     private static BehaviorGateSingle<EntityPiglin> b() {
+-        return new BehaviorGateSingle<>(ImmutableList.of(Pair.of(new BehaviorStrollRandomUnconstrained(0.6F), 2), Pair.of(BehaviorInteract.a(EntityTypes.PIGLIN, 8, MemoryModuleType.INTERACTION_TARGET, 0.6F, 2), 2), Pair.of(new BehaviorRunIf<>(PiglinAI::g, new BehaviorLookWalk(0.6F, 3)), 2), Pair.of(new BehaviorNop(30, 60), 1)));
++        // CraftBukkit - decompile error
++        return new BehaviorGateSingle<>(ImmutableList.of(Pair.of(new BehaviorStrollRandomUnconstrained(0.6F), 2), Pair.of(BehaviorInteract.a(EntityTypes.PIGLIN, 8, MemoryModuleType.INTERACTION_TARGET, 0.6F, 2), 2), Pair.of(new BehaviorRunIf<>((java.util.function.Predicate<EntityLiving>) PiglinAI::g, new BehaviorLookWalk(0.6F, 3)), 2), Pair.of(new BehaviorNop(30, 60), 1)));
+     }
+ 
+     private static BehaviorWalkAway<BlockPosition> c() {
+@@ -157,10 +167,10 @@
+ 
+     protected static void b(EntityPiglin entitypiglin) {
+         BehaviorController<EntityPiglin> behaviorcontroller = entitypiglin.getBehaviorController();
+-        Activity activity = (Activity) behaviorcontroller.f().orElse((Object) null);
++        Activity activity = (Activity) behaviorcontroller.f().orElse(null); // CraftBukkit - decompile error
+ 
+         behaviorcontroller.a((List) ImmutableList.of(Activity.ADMIRE_ITEM, Activity.FLIGHT, Activity.AVOID, Activity.CELEBRATE, Activity.RIDE, Activity.IDLE));
+-        Activity activity1 = (Activity) behaviorcontroller.f().orElse((Object) null);
++        Activity activity1 = (Activity) behaviorcontroller.f().orElse(null); // CraftBukkit - decompile error
+ 
+         if (activity != activity1) {
+             d(entitypiglin).ifPresent(entitypiglin::a);
+@@ -192,25 +202,29 @@
+         n(entitypiglin);
+         ItemStack itemstack;
+ 
+-        if (entityitem.getItemStack().getItem() == Items.GOLD_NUGGET) {
++        // CraftBukkit start
++        if (entityitem.getItemStack().getItem() == Items.GOLD_NUGGET && !org.bukkit.craftbukkit.event.CraftEventFactory.callEntityPickupItemEvent(entitypiglin, entityitem, 0, false).isCancelled()) {
+             entitypiglin.receive(entityitem, entityitem.getItemStack().getCount());
+             itemstack = entityitem.getItemStack();
+             entityitem.die();
+-        } else {
++        } else if (!org.bukkit.craftbukkit.event.CraftEventFactory.callEntityPickupItemEvent(entitypiglin, entityitem, entityitem.getItemStack().getCount() - 1, false).isCancelled()) {
+             entitypiglin.receive(entityitem, 1);
+             itemstack = a(entityitem);
++        } else {
++            return;
+         }
++        // CraftBukkit end
+ 
+         Item item = itemstack.getItem();
+ 
+-        if (a(item)) {
++        if (isLovedByPiglin(item, entitypiglin)) { // CraftBukkit - Changes to allow for custom payment in bartering
+             entitypiglin.getBehaviorController().removeMemory(MemoryModuleType.TIME_TRYING_TO_REACH_ADMIRE_ITEM);
+             c(entitypiglin, itemstack);
+             d((EntityLiving) entitypiglin);
+         } else if (c(item) && !u(entitypiglin)) {
+             s(entitypiglin);
+         } else {
+-            boolean flag = entitypiglin.g(itemstack);
++            boolean flag = entitypiglin.g(itemstack, entityitem); // CraftBukkit
+ 
+             if (!flag) {
+                 d(entitypiglin, itemstack);
+@@ -246,9 +260,14 @@
+         boolean flag1;
+ 
+         if (entitypiglin.eM()) {
+-            flag1 = b(itemstack.getItem());
++            flag1 = isBarterItem(itemstack.getItem(), entitypiglin); // CraftBukkit - Changes to allow custom payment for bartering
+             if (flag && flag1) {
+-                a(entitypiglin, i(entitypiglin));
++                // CraftBukkit start
++                PiglinBarterEvent event = CraftEventFactory.callPiglinBarterEvent(entitypiglin, i(entitypiglin), itemstack);
++                if (!event.isCancelled()) {
++                    a(entitypiglin, event.getOutcome().stream().map(CraftItemStack::asNMSCopy).collect(Collectors.toList()));
++                }
++                // CraftBukkit end
+             } else if (!flag1) {
+                 boolean flag2 = entitypiglin.g(itemstack);
+ 
+@@ -261,7 +280,7 @@
+             if (!flag1) {
+                 ItemStack itemstack1 = entitypiglin.getItemInMainHand();
+ 
+-                if (a(itemstack1.getItem())) {
++                if (isLovedByPiglin(itemstack1.getItem(), entitypiglin)) { // CraftBukkit - Changes to allow for custom payment in bartering
+                     d(entitypiglin, itemstack1);
+                 } else {
+                     a(entitypiglin, Collections.singletonList(itemstack1));
+@@ -338,15 +357,21 @@
+             return false;
+         } else if (x(entitypiglin) && entitypiglin.getBehaviorController().hasMemory(MemoryModuleType.ATTACK_TARGET)) {
+             return false;
+-        } else if (b(item)) {
++        } else if (isBarterItem(item, entitypiglin)) { // CraftBukkit
+             return z(entitypiglin);
+         } else {
+             boolean flag = entitypiglin.l(itemstack);
+ 
+-            return item == Items.GOLD_NUGGET ? flag : (c(item) ? !u(entitypiglin) && flag : (!a(item) ? entitypiglin.o(itemstack) : z(entitypiglin) && flag));
++            return item == Items.GOLD_NUGGET ? flag : (c(item) ? !u(entitypiglin) && flag : (!isLovedByPiglin(item, entitypiglin) ? entitypiglin.o(itemstack) : z(entitypiglin) && flag)); //CraftBukkit
+         }
+     }
+ 
++    // CraftBukkit start - Added method to allow checking for custom payment items
++    protected static boolean isLovedByPiglin(Item item, EntityPiglin piglin) {
++        return a(item) || (piglin.interestItems.contains(item) || piglin.allowedBarterItems.contains(item));
++    }
++    // CraftBukkit end
++
+     protected static boolean a(Item item) {
+         return item.a((Tag) TagsItem.PIGLIN_LOVED);
+     }
+@@ -412,7 +437,7 @@
+     }
+ 
+     public static void a(EntityHuman entityhuman, boolean flag) {
+-        List<EntityPiglin> list = entityhuman.world.a(EntityPiglin.class, entityhuman.getBoundingBox().g(16.0D));
++        List<EntityPiglinAbstract> list = entityhuman.world.a(EntityPiglin.class, entityhuman.getBoundingBox().g(16.0D)); // CraftBukkit - decompile error
+ 
+         list.stream().filter(PiglinAI::d).filter((entitypiglin) -> {
+             return !flag || BehaviorUtil.c(entitypiglin, entityhuman);
+@@ -442,7 +467,7 @@
+     }
+ 
+     protected static boolean b(EntityPiglin entitypiglin, ItemStack itemstack) {
+-        return !x(entitypiglin) && !v(entitypiglin) && entitypiglin.eM() && b(itemstack.getItem());
++        return !x(entitypiglin) && !v(entitypiglin) && entitypiglin.eM() && isBarterItem(itemstack.getItem(), entitypiglin); // CraftBukkit
+     }
+ 
+     protected static void a(EntityPiglin entitypiglin, EntityLiving entityliving) {
+@@ -648,7 +673,7 @@
+             EntityLiving entityliving = (EntityLiving) behaviorcontroller.getMemory(MemoryModuleType.AVOID_TARGET).get();
+             EntityTypes<?> entitytypes = entityliving.getEntityType();
+ 
+-            return entitytypes == EntityTypes.HOGLIN ? p(entitypiglin) : (a(entitytypes) ? !behaviorcontroller.b(MemoryModuleType.NEAREST_VISIBLE_ZOMBIFIED, (Object) entityliving) : false);
++            return entitytypes == EntityTypes.HOGLIN ? p(entitypiglin) : (a(entitytypes) ? !behaviorcontroller.b(MemoryModuleType.NEAREST_VISIBLE_ZOMBIFIED, entityliving) : false); // CraftBukkit - decompile error
+         }
+     }
+ 
+@@ -705,6 +730,12 @@
+         return entitypiglin.getBehaviorController().hasMemory(MemoryModuleType.ADMIRING_ITEM);
+     }
+ 
++    // CraftBukkit start - Changes to allow custom payment for bartering
++    private static boolean isBarterItem(Item item, EntityPiglin piglin) {
++        return b(item) || piglin.allowedBarterItems.contains(item);
++    }
++    // CraftBukkit end
++
+     private static boolean b(Item item) {
+         return item == PiglinAI.a;
+     }
+@@ -730,7 +761,7 @@
+     }
+ 
+     public static boolean b(EntityLiving entityliving) {
+-        return entityliving.getEntityType() == EntityTypes.PLAYER && entityliving.a(PiglinAI::a);
++        return entityliving.getEntityType() == EntityTypes.PLAYER && entityliving.a((java.util.function.Predicate<Item>) PiglinAI::a); // CraftBukkit - decompile error
+     }
+ 
+     private static boolean x(EntityPiglin entitypiglin) {
+@@ -746,7 +777,7 @@
+     }
+ 
+     private static boolean z(EntityPiglin entitypiglin) {
+-        return entitypiglin.getItemInOffHand().isEmpty() || !a(entitypiglin.getItemInOffHand().getItem());
++        return entitypiglin.getItemInOffHand().isEmpty() || !isLovedByPiglin(entitypiglin.getItemInOffHand().getItem(), entitypiglin); // CraftBukkit - Changes to allow custom payment for bartering
+     }
+ 
+     public static boolean a(EntityTypes entitytypes) {
