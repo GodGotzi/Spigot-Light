@@ -63,7 +63,6 @@ import org.apache.logging.log4j.Logger;
 // CraftBukkit start
 import net.minecraft.world.level.DataPackConfiguration;
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.io.IoBuilder;
 import org.bukkit.command.CommandSender;
 import org.bukkit.craftbukkit.SpigotTimings; // Spigot
 import org.bukkit.event.server.ServerCommandEvent;
@@ -160,8 +159,8 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
 
         new org.bukkit.craftbukkit.util.TerminalConsoleWriterThread(System.out, this.reader).start();
 
-        System.setOut(IoBuilder.forLogger(logger).setLevel(Level.INFO).buildPrintStream());
-        System.setErr(IoBuilder.forLogger(logger).setLevel(Level.WARN).buildPrintStream());
+        //System.setOut(IoBuilder.forLogger(logger).setLevel(Level.INFO).buildPrintStream());
+        //System.setErr(IoBuilder.forLogger(logger).setLevel(Level.WARN).buildPrintStream());
         // CraftBukkit end
 
         thread.setDaemon(true);
@@ -183,7 +182,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
             this.a_(dedicatedserverproperties.serverIp);
         }
         // Spigot start
-        this.a((PlayerList) (new DedicatedPlayerList(this, this.customRegistry, this.worldNBTStorage)));
+        //this.a((PlayerList) (new DedicatedPlayerList(this, this.customRegistry, this.worldNBTStorage)));
         org.spigotmc.SpigotConfig.init((java.io.File) options.valueOf("spigot-settings"));
         org.spigotmc.SpigotConfig.registerCommands();
         // Spigot end
@@ -193,7 +192,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
         this.setResourcePack(dedicatedserverproperties.resourcePack, this.ba());
         this.setMotd(dedicatedserverproperties.motd);
         this.setForceGamemode(dedicatedserverproperties.forceGamemode);
-        super.setIdleTimeout(dedicatedserverproperties.getPlayerIdleTimeout());
+        super.setIdleTimeout((Integer) dedicatedserverproperties.playerIdleTimeout.get());
         this.i(dedicatedserverproperties.enforceWhitelist);
         // this.saveData.setGameType(dedicatedserverproperties.gamemode); // CraftBukkit - moved to world loading
         DedicatedServer.LOGGER.info("Default game type: {}", dedicatedserverproperties.gamemode);
@@ -535,7 +534,9 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
     @Override
     public void setIdleTimeout(int i) {
         super.setIdleTimeout(i);
-        this.propertyManager.getProperties().setPlayerIdleTimeout(i);
+        this.propertyManager.setProperty((dedicatedserverproperties) -> {
+            return (DedicatedServerProperties) dedicatedserverproperties.playerIdleTimeout.set(this.getCustomRegistry(), i);
+        });
     }
 
     @Override
@@ -677,7 +678,9 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
     }
 
     public void setHasWhitelist(boolean flag) {
-        this.propertyManager.getProperties().setWhiteList(flag);
+        this.propertyManager.setProperty((dedicatedserverproperties) -> {
+            return (DedicatedServerProperties) dedicatedserverproperties.whiteList.set(this.getCustomRegistry(), flag);
+        });
     }
 
     @Override

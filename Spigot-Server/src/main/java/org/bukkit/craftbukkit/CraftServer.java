@@ -44,6 +44,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import jline.console.ConsoleReader;
@@ -100,7 +101,6 @@ import net.minecraft.world.level.saveddata.maps.MapIcon;
 import net.minecraft.world.level.saveddata.maps.WorldMap;
 import net.minecraft.world.level.storage.Convertable;
 import net.minecraft.world.level.storage.WorldDataServer;
-import net.minecraft.world.level.storage.WorldNBTStorage;
 import net.minecraft.world.level.storage.loot.LootTableRegistry;
 import net.minecraft.world.phys.Vec3D;
 import org.apache.commons.lang.Validate;
@@ -172,7 +172,6 @@ import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.craftbukkit.util.CraftIconCache;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
-import org.bukkit.craftbukkit.util.DatFileFilter;
 import org.bukkit.craftbukkit.util.Versioning;
 import org.bukkit.craftbukkit.util.permissions.CraftDefaultPermissions;
 import org.bukkit.entity.Entity;
@@ -228,7 +227,7 @@ public final class CraftServer implements Server {
     private final String serverName = "CraftBukkit";
     private final String serverVersion;
     private final String bukkitVersion = Versioning.getBukkitVersion();
-    private final Logger logger = Logger.getLogger("Minecraft");
+    private final Logger logger = LogManager.getLogManager().getLogger("nice");
     private final ServicesManager servicesManager = new SimpleServicesManager();
     private final CraftScheduler scheduler = new CraftScheduler();
     private final CraftCommandMap commandMap = new CraftCommandMap(this);
@@ -619,7 +618,7 @@ public final class CraftServer implements Server {
 
     @Override
     public String getWorldType() {
-        return this.getProperties().getProperty("level-type");
+        return this.getProperties().properties.getProperty("level-type");
     }
 
     @Override
@@ -652,7 +651,7 @@ public final class CraftServer implements Server {
 
     @Override
     public boolean hasWhitelist() {
-        return this.getProperties().isWhiteList();
+        return this.getProperties().whiteList.get();
     }
 
     // NOTE: Temporary calls through to server.properies until its replaced
@@ -777,7 +776,7 @@ public final class CraftServer implements Server {
         configuration = YamlConfiguration.loadConfiguration(getConfigFile());
         commandsConfiguration = YamlConfiguration.loadConfiguration(getCommandsConfigFile());
 
-        //console.propertyManager = new DedicatedServerSettings(console.getCustomRegistry());
+        console.propertyManager = new DedicatedServerSettings(console.getCustomRegistry(), console.options);
         DedicatedServerProperties config = console.propertyManager.getProperties();
 
         console.setPVP(config.pvp);
@@ -868,10 +867,10 @@ public final class CraftServer implements Server {
                 author = plugin.getDescription().getAuthors().get(0);
             }
             getLogger().log(Level.SEVERE, String.format(
-                "Nag author: '%s' of '%s' about the following: %s",
-                author,
-                plugin.getDescription().getName(),
-                "This plugin is not properly shutting down its async tasks when it is being reloaded.  This may cause conflicts with the newly loaded version of the plugin"
+                    "Nag author: '%s' of '%s' about the following: %s",
+                    author,
+                    plugin.getDescription().getName(),
+                    "This plugin is not properly shutting down its async tasks when it is being reloaded.  This may cause conflicts with the newly loaded version of the plugin"
             ));
         }
         loadPlugins();
@@ -1534,11 +1533,11 @@ public final class CraftServer implements Server {
         Validate.notNull(type, "Type cannot be null");
 
         switch (type) {
-        case IP:
-            return new CraftIpBanList(playerList.getIPBans());
-        case NAME:
-        default:
-            return new CraftProfileBanList(playerList.getProfileBans());
+            case IP:
+                return new CraftIpBanList(playerList.getIPBans());
+            case NAME:
+            default:
+                return new CraftProfileBanList(playerList.getProfileBans());
         }
     }
 
@@ -1611,23 +1610,10 @@ public final class CraftServer implements Server {
         return this.getServer().convertable.a(net.minecraft.world.level.World.OVERWORLD).getParentFile();
     }
 
+    @Deprecated
     @Override
     public OfflinePlayer[] getOfflinePlayers() {
-        WorldNBTStorage storage = console.worldNBTStorage;
-        String[] files = storage.getPlayerDir().list(new DatFileFilter());
-        Set<OfflinePlayer> players = new HashSet<OfflinePlayer>();
-
-        for (String file : files) {
-            try {
-                players.add(getOfflinePlayer(UUID.fromString(file.substring(0, file.length() - 4))));
-            } catch (IllegalArgumentException ex) {
-                // Who knows what is in this directory, just ignore invalid files
-            }
-        }
-
-        players.addAll(getOnlinePlayers());
-
-        return players.toArray(new OfflinePlayer[players.size()]);
+        return new OfflinePlayer[]{};
     }
 
     @Override

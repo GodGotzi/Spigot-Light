@@ -130,7 +130,6 @@ public abstract class PlayerList {
     // private final Map<UUID, ServerStatisticManager> o;
     // private final Map<UUID, AdvancementDataPlayer> p;
     // CraftBukkit end
-    public final WorldNBTStorage playerFileData;
     private boolean hasWhitelist;
     private final IRegistryCustom.Dimension s;
     protected final int maxPlayers;
@@ -143,7 +142,7 @@ public abstract class PlayerList {
     private CraftServer cserver;
     private final Map<String,EntityPlayer> playersByName = new java.util.HashMap<>();
 
-    public PlayerList(MinecraftServer minecraftserver, IRegistryCustom.Dimension iregistrycustom_dimension, WorldNBTStorage worldnbtstorage, int i) {
+    public PlayerList(MinecraftServer minecraftserver, IRegistryCustom.Dimension iregistrycustom_dimension, int i) {
         this.cserver = minecraftserver.server = new CraftServer((DedicatedServer) minecraftserver, this);
         minecraftserver.console = org.bukkit.craftbukkit.command.ColouredConsoleSender.getInstance();
         minecraftserver.reader.addCompleter(new org.bukkit.craftbukkit.command.ConsoleCommandCompleter(minecraftserver.server));
@@ -160,7 +159,6 @@ public abstract class PlayerList {
         this.server = minecraftserver;
         this.s = iregistrycustom_dimension;
         this.maxPlayers = i;
-        this.playerFileData = worldnbtstorage;
     }
 
     public void a(NetworkManager networkmanager, EntityPlayer entityplayer) {
@@ -170,31 +168,13 @@ public abstract class PlayerList {
         String s = gameprofile1 == null ? gameprofile.getName() : gameprofile1.getName();
 
         usercache.a(gameprofile);
-        NBTTagCompound nbttagcompound = this.a(entityplayer);
-        ResourceKey resourcekey;
-        // CraftBukkit start - Better rename detection
-        if (nbttagcompound != null && nbttagcompound.hasKey("bukkit")) {
-            NBTTagCompound bukkit = nbttagcompound.getCompound("bukkit");
-            s = bukkit.hasKeyOfType("lastKnownName", 8) ? bukkit.getString("lastKnownName") : s;
-        }
-        // CraftBukkit end
 
-        if (nbttagcompound != null) {
-            DataResult dataresult = DimensionManager.a(new Dynamic(DynamicOpsNBT.a, nbttagcompound.get("Dimension")));
-            Logger logger = PlayerList.LOGGER;
-
-            logger.getClass();
-            resourcekey = (ResourceKey) dataresult.resultOrPartial(logger::error).orElse(World.OVERWORLD);
-        } else {
-            resourcekey = World.OVERWORLD;
-        }
-
-        ResourceKey<World> resourcekey1 = resourcekey;
-        WorldServer worldserver = this.server.getWorldServer(resourcekey1);
+        ResourceKey<World> resourcekey = World.OVERWORLD;
+        WorldServer worldserver = this.server.getWorldServer(resourcekey);
         WorldServer worldserver1;
 
         if (worldserver == null) {
-            PlayerList.LOGGER.warn("Unknown respawn dimension {}, defaulting to overworld", resourcekey1);
+            PlayerList.LOGGER.warn("Unknown respawn dimension {}, defaulting to overworld", resourcekey);
             worldserver1 = this.server.E();
         } else {
             worldserver1 = worldserver;
@@ -321,57 +301,9 @@ public abstract class PlayerList {
             playerconnection.sendPacket(new PacketPlayOutEntityEffect(entityplayer.getId(), mobeffect));
         }
 
-        if (nbttagcompound != null && nbttagcompound.hasKeyOfType("RootVehicle", 10)) {
-            NBTTagCompound nbttagcompound1 = nbttagcompound.getCompound("RootVehicle");
-            // CraftBukkit start
-            WorldServer finalWorldServer = worldserver1;
-            Entity entity = EntityTypes.a(nbttagcompound1.getCompound("Entity"), finalWorldServer, (entity1) -> {
-                return !finalWorldServer.addEntitySerialized(entity1) ? null : entity1;
-                // CraftBukkit end
-            });
-
-            if (entity != null) {
-                UUID uuid;
-
-                if (nbttagcompound1.b("Attach")) {
-                    uuid = nbttagcompound1.a("Attach");
-                } else {
-                    uuid = null;
-                }
-
-                Iterator iterator1;
-                Entity entity1;
-
-                if (entity.getUniqueID().equals(uuid)) {
-                    entityplayer.a(entity, true);
-                } else {
-                    iterator1 = entity.getAllPassengers().iterator();
-
-                    while (iterator1.hasNext()) {
-                        entity1 = (Entity) iterator1.next();
-                        if (entity1.getUniqueID().equals(uuid)) {
-                            entityplayer.a(entity1, true);
-                            break;
-                        }
-                    }
-                }
-
-                if (!entityplayer.isPassenger()) {
-                    PlayerList.LOGGER.warn("Couldn't reattach entity to player");
-                    worldserver1.removeEntity(entity);
-                    iterator1 = entity.getAllPassengers().iterator();
-
-                    while (iterator1.hasNext()) {
-                        entity1 = (Entity) iterator1.next();
-                        worldserver1.removeEntity(entity1);
-                    }
-                }
-            }
-        }
-
         entityplayer.syncInventory();
         // CraftBukkit - Moved from above, added world
-        PlayerList.LOGGER.info("{}[{}] logged in with entity id {} at ([{}]{}, {}, {})", entityplayer.getDisplayName().getString(), s1, entityplayer.getId(), worldserver1.worldDataServer.getName(), entityplayer.locX(), entityplayer.locY(), entityplayer.locZ());
+        //PlayerList.LOGGER.info("{}[{}] logged in with entity id {} at ([{}]{}, {}, {})", entityplayer.getDisplayName().getString(), s1, entityplayer.getId(), worldserver1.worldDataServer.getName(), entityplayer.locX(), entityplayer.locY(), entityplayer.locZ());
     }
 
     public void sendScoreboard(ScoreboardServer scoreboardserver, EntityPlayer entityplayer) {
@@ -404,7 +336,6 @@ public abstract class PlayerList {
     }
 
     public void setPlayerFileData(WorldServer worldserver) {
-        if (playerFileData != null) return; // CraftBukkit
         worldserver.getWorldBorder().a(new IWorldBorderListener() {
             @Override
             public void a(WorldBorder worldborder, double d0) {
@@ -439,39 +370,6 @@ public abstract class PlayerList {
         });
     }
 
-    @Nullable
-    public NBTTagCompound a(EntityPlayer entityplayer) {
-        NBTTagCompound nbttagcompound = this.server.getSaveData().y();
-        NBTTagCompound nbttagcompound1;
-
-        if (entityplayer.getDisplayName().getString().equals(this.server.getSinglePlayerName()) && nbttagcompound != null) {
-            nbttagcompound1 = nbttagcompound;
-            entityplayer.load(nbttagcompound);
-            PlayerList.LOGGER.debug("loading single player");
-        } else {
-            nbttagcompound1 = this.playerFileData.load(entityplayer);
-        }
-
-        return nbttagcompound1;
-    }
-
-    protected void savePlayerFile(EntityPlayer entityplayer) {
-        if (!entityplayer.getBukkitEntity().isPersistent()) return; // CraftBukkit
-        this.playerFileData.save(entityplayer);
-        ServerStatisticManager serverstatisticmanager = (ServerStatisticManager) entityplayer.getStatisticManager(); // CraftBukkit
-
-        if (serverstatisticmanager != null) {
-            serverstatisticmanager.save();
-        }
-
-        AdvancementDataPlayer advancementdataplayer = (AdvancementDataPlayer) entityplayer.getAdvancementData(); // CraftBukkit
-
-        if (advancementdataplayer != null) {
-            advancementdataplayer.b();
-        }
-
-    }
-
     public String disconnect(EntityPlayer entityplayer) { // CraftBukkit - return string
         WorldServer worldserver = entityplayer.getWorldServer();
 
@@ -490,7 +388,7 @@ public abstract class PlayerList {
         entityplayer.playerTick(); // SPIGOT-924
         // CraftBukkit end
 
-        this.savePlayerFile(entityplayer);
+        //this.savePlayerFile(entityplayer);
         if (entityplayer.isPassenger()) {
             Entity entity = entityplayer.getRootVehicle();
 
@@ -568,7 +466,7 @@ public abstract class PlayerList {
 
         while (iterator.hasNext()) {
             entityplayer = (EntityPlayer) iterator.next();
-            savePlayerFile(entityplayer); // CraftBukkit - Force the player's inventory to be saved
+            //savePlayerFile(entityplayer); // CraftBukkit - Force the player's inventory to be saved
             entityplayer.playerConnection.disconnect(new ChatMessage("multiplayer.disconnect.duplicate_login", new Object[0]));
         }
 
@@ -821,10 +719,6 @@ public abstract class PlayerList {
             server.server.getPluginManager().callEvent(event);
         }
 
-        // Save player file again if they were disconnected
-        if (entityplayer.playerConnection.isDisconnected()) {
-            this.savePlayerFile(entityplayer);
-        }
         // CraftBukkit end
         return entityplayer1;
     }
@@ -1021,11 +915,9 @@ public abstract class PlayerList {
 
     }
 
+    @Deprecated
     public void savePlayers() {
-        for (int i = 0; i < this.players.size(); ++i) {
-            this.savePlayerFile((EntityPlayer) this.players.get(i));
-        }
-
+        return;
     }
 
     public WhiteList getWhitelist() {

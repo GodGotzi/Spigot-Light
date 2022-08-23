@@ -33,7 +33,7 @@ public abstract class PropertyManager<T extends PropertyManager<T>> {
     }
 
     private String getOverride(String name, String value) {
-        if ((this.options != null) && (this.options.has(name)) && !name.equals( "online-mode")) { // Spigot
+        if ((this.options != null) && (this.options.has(name)) && !name.equals("online-mode")) { // Spigot
             return String.valueOf(this.options.valueOf(name));
         }
 
@@ -41,72 +41,36 @@ public abstract class PropertyManager<T extends PropertyManager<T>> {
     }
     // CraftBukkit end
 
-    public static Properties loadPropertiesFile(Path path) {
+    public static Properties loadPropertiesFile(InputStream inputStream) {
         Properties properties = new Properties();
 
         try {
-            InputStream inputstream = Files.newInputStream(path);
             Throwable throwable = null;
 
             try {
-                properties.load(inputstream);
+                properties.load(inputStream);
             } catch (Throwable throwable1) {
                 throwable = throwable1;
                 throw throwable1;
             } finally {
-                if (inputstream != null) {
+                if (inputStream != null) {
                     if (throwable != null) {
                         try {
-                            inputstream.close();
+                            inputStream.close();
                         } catch (Throwable throwable2) {
                             throwable.addSuppressed(throwable2);
                         }
                     } else {
-                        inputstream.close();
+                        inputStream.close();
                     }
                 }
 
             }
         } catch (IOException ioexception) {
-            PropertyManager.LOGGER.error("Failed to load properties from file: " + path);
+            PropertyManager.LOGGER.error("Failed to load properties from file");
         }
 
         return properties;
-    }
-
-    public void savePropertiesFile(Path path) {
-        try {
-            // CraftBukkit start - Don't attempt writing to file if it's read only
-            if (path.toFile().exists() && !path.toFile().canWrite()) {
-                return;
-            }
-            // CraftBukkit end
-            OutputStream outputstream = Files.newOutputStream(path);
-            Throwable throwable = null;
-
-            try {
-                this.properties.store(outputstream, "Minecraft server properties");
-            } catch (Throwable throwable1) {
-                throwable = throwable1;
-                throw throwable1;
-            } finally {
-                if (outputstream != null) {
-                    if (throwable != null) {
-                        try {
-                            outputstream.close();
-                        } catch (Throwable throwable2) {
-                            throwable.addSuppressed(throwable2);
-                        }
-                    } else {
-                        outputstream.close();
-                    }
-                }
-
-            }
-        } catch (IOException ioexception) {
-            PropertyManager.LOGGER.error("Failed to store properties to file: " + path);
-        }
-
     }
 
     private static <V extends Number> Function<String, V> a(Function<String, V> function) {

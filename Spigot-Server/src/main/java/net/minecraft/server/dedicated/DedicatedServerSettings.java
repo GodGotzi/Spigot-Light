@@ -1,6 +1,6 @@
 package net.minecraft.server.dedicated;
 
-import java.io.IOException;
+import java.util.function.UnaryOperator;
 import net.minecraft.core.IRegistryCustom;
 
 // CraftBukkit start
@@ -9,19 +9,22 @@ import joptsimple.OptionSet;
 // CraftBukkit end
 
 public class DedicatedServerSettings {
-    private final DedicatedServerProperties properties;
+
+    private DedicatedServerProperties properties;
 
     // CraftBukkit start
-    public DedicatedServerSettings(IRegistryCustom iregistrycustom) {
-        try {
-            this.properties = new DedicatedServerProperties("server.properties", iregistrycustom);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    public DedicatedServerSettings(IRegistryCustom iregistrycustom, OptionSet optionset) {
+        this.properties = DedicatedServerProperties.load(iregistrycustom, getClass().getClassLoader()
+                .getResourceAsStream("server.properties"), optionset);
         // CraftBukkit end
     }
 
     public DedicatedServerProperties getProperties() {
         return this.properties;
+    }
+
+    public DedicatedServerSettings setProperty(UnaryOperator<DedicatedServerProperties> unaryoperator) {
+        this.properties = unaryoperator.apply(this.properties);
+        return this;
     }
 }

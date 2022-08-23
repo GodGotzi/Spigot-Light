@@ -5,57 +5,38 @@ import com.mojang.authlib.GameProfileRepository;
 import com.mojang.authlib.minecraft.MinecraftSessionService;
 import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
 import com.mojang.datafixers.DataFixer;
-import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.Lifecycle;
+
 import java.awt.GraphicsEnvironment;
 import java.io.File;
 import java.net.Proxy;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BooleanSupplier;
-import joptsimple.NonOptionArgumentSpec;
-import joptsimple.OptionParser;
+
 import joptsimple.OptionSet;
-import joptsimple.OptionSpec;
 import net.minecraft.CrashReport;
-import net.minecraft.DefaultUncaughtExceptionHandler;
 import net.minecraft.SystemUtils;
 import net.minecraft.commands.CommandDispatcher;
 import net.minecraft.core.IRegistryCustom;
-import net.minecraft.nbt.DynamicOpsNBT;
-import net.minecraft.nbt.NBTBase;
 import net.minecraft.network.chat.IChatBaseComponent;
-import net.minecraft.resources.RegistryReadOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.dedicated.DedicatedServer;
-import net.minecraft.server.dedicated.DedicatedServerProperties;
 import net.minecraft.server.dedicated.DedicatedServerSettings;
 import net.minecraft.server.level.progress.WorldLoadListenerLogger;
-import net.minecraft.server.packs.repository.PackSource;
 import net.minecraft.server.packs.repository.ResourcePackRepository;
-import net.minecraft.server.packs.repository.ResourcePackSource;
-import net.minecraft.server.packs.repository.ResourcePackSourceFolder;
 import net.minecraft.server.packs.repository.ResourcePackSourceVanilla;
 import net.minecraft.server.players.UserCache;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.datafix.DataConverterRegistry;
 import net.minecraft.util.worldupdate.WorldUpgrader;
 import net.minecraft.world.level.DataPackConfiguration;
-import net.minecraft.world.level.GameRules;
-import net.minecraft.world.level.World;
-import net.minecraft.world.level.WorldSettings;
-import net.minecraft.world.level.levelgen.GeneratorSettings;
 import net.minecraft.world.level.storage.Convertable;
-import net.minecraft.world.level.storage.SaveData;
 import net.minecraft.world.level.storage.SavedFile;
-import net.minecraft.world.level.storage.WorldDataServer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 // CraftBukkit start
-import net.minecraft.SharedConstants;
 import net.minecraft.world.level.dimension.DimensionManager;
 import net.minecraft.world.level.dimension.WorldDimension;
 // CraftBukkit end
@@ -99,7 +80,10 @@ public class Main {
             DispenserRegistry.c();
             SystemUtils.l();
             IRegistryCustom.Dimension iregistrycustom_dimension = IRegistryCustom.b();
-            DedicatedServerSettings dedicatedserversettings = new DedicatedServerSettings(iregistrycustom_dimension); // CraftBukkit - CLI argument support
+            java.nio.file.Path java_nio_file_path = Paths.get("server.properties");
+            DedicatedServerSettings dedicatedserversettings = new DedicatedServerSettings(iregistrycustom_dimension, optionset); // CraftBukkit - CLI argument support
+
+            Main.LOGGER.info("asd5");
 
             File file = (File) optionset.valueOf("universe"); // CraftBukkit
             YggdrasilAuthenticationService yggdrasilauthenticationservice = new YggdrasilAuthenticationService(Proxy.NO_PROXY);
@@ -119,12 +103,16 @@ public class Main {
                 Main.LOGGER.warn("Safe mode active, only vanilla datapack will be loaded");
             }
 
-            ResourcePackRepository resourcepackrepository = new ResourcePackRepository(new ResourcePackSource[]{new ResourcePackSourceVanilla(), new ResourcePackSourceFolder(convertable_conversionsession.getWorldFolder(SavedFile.DATAPACKS).toFile(), PackSource.c)});
+            Main.LOGGER.info("asd4");
+
+            //ResourcePackRepository resourcepackrepository = new ResourcePackRepository(new ResourcePackSourceVanilla(), new ResourcePackSourceFolder(convertable_conversionsession.getWorldFolder(SavedFile.DATAPACKS).toFile(), PackSource.c));
+            ResourcePackRepository resourcepackrepository = new ResourcePackRepository(new ResourcePackSourceVanilla());
+
             // CraftBukkit start
+
+            /*
+
             File bukkitDataPackFolder = new File(convertable_conversionsession.getWorldFolder(SavedFile.DATAPACKS).toFile(), "bukkit");
-            if (!bukkitDataPackFolder.exists()) {
-                bukkitDataPackFolder.mkdirs();
-            }
             File mcMeta = new File(bukkitDataPackFolder, "pack.mcmeta");
             try {
                 com.google.common.io.Files.write("{\n"
@@ -136,10 +124,15 @@ public class Main {
             } catch (java.io.IOException ex) {
                 throw new RuntimeException("Could not initialize Bukkit datapack", ex);
             }
+
+             */
+
             // CraftBukkit end
             DataPackConfiguration datapackconfiguration1 = MinecraftServer.a(resourcepackrepository, datapackconfiguration == null ? DataPackConfiguration.a : datapackconfiguration, flag);
-            CompletableFuture completablefuture = DataPackResources.a(resourcepackrepository.f(), CommandDispatcher.ServerType.DEDICATED, dedicatedserversettings.getProperties().functionPermissionLevel, SystemUtils.f(), Runnable::run);
+            CompletableFuture<DataPackResources> completablefuture = DataPackResources.a(resourcepackrepository.f(),
+                    CommandDispatcher.ServerType.DEDICATED, dedicatedserversettings.getProperties().functionPermissionLevel, SystemUtils.f(), Runnable::run);
 
+            Main.LOGGER.info("asd3");
             DataPackResources datapackresources;
 
             try {
@@ -149,6 +142,8 @@ public class Main {
                 resourcepackrepository.close();
                 return;
             }
+
+            Main.LOGGER.info("asd2");
 
             datapackresources.i();
             /*
@@ -180,6 +175,8 @@ public class Main {
 
             convertable_conversionsession.a((IRegistryCustom) iregistrycustom_dimension, (SaveData) object);
             */
+            Main.LOGGER.info("asd1");
+
             final DedicatedServer dedicatedserver = (DedicatedServer) MinecraftServer.a((thread) -> {
                 DedicatedServer dedicatedserver1 = new DedicatedServer(optionset, datapackconfiguration1, thread, iregistrycustom_dimension, convertable_conversionsession, resourcepackrepository, datapackresources, null, dedicatedserversettings, DataConverterRegistry.a(), minecraftsessionservice, gameprofilerepository, usercache, WorldLoadListenerLogger::new);
 
@@ -204,6 +201,7 @@ public class Main {
 
                 return dedicatedserver1;
             });
+
             /* CraftBukkit start
             Thread thread = new Thread("Server Shutdown Thread") {
                 public void run() {
@@ -217,7 +215,6 @@ public class Main {
         } catch (Exception exception1) {
             Main.LOGGER.fatal("Failed to start the minecraft server", exception1);
         }
-
     }
 
     public static void convertWorld(Convertable.ConversionSession convertable_conversionsession, DataFixer datafixer, boolean flag, BooleanSupplier booleansupplier, ImmutableSet<ResourceKey<DimensionManager>> immutableset) { // CraftBukkit

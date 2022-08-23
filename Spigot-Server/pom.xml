@@ -52,19 +52,6 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-iostreams</artifactId>
-            <version>2.8.1</version>
-            <scope>compile</scope>
-            <exclusions>
-                <!-- included in minecraft-server -->
-                <exclusion>
-                    <groupId>org.apache.logging.log4j</groupId>
-                    <artifactId>log4j-api</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
             <groupId>org.ow2.asm</groupId>
             <artifactId>asm</artifactId>
             <version>9.1</version>
@@ -108,19 +95,6 @@
             <version>1.6.2</version>
             <scope>runtime</scope>
         </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j-impl</artifactId>
-            <version>2.8.1</version>
-            <scope>runtime</scope>
-            <exclusions>
-                <!-- included in minecraft-server -->
-                <exclusion>
-                    <groupId>org.apache.logging.log4j</groupId>
-                    <artifactId>log4j-api</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
         <!-- testing -->
         <dependency>
             <groupId>junit</groupId>
@@ -133,6 +107,12 @@
             <artifactId>hamcrest-library</artifactId>
             <version>1.3</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>at.gotzi.minestrum</groupId>
+            <artifactId>minestrum-api</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 
@@ -211,115 +191,8 @@
                             </manifestSection>
                         </manifestSections>
                     </archive>
+                    <outputDirectory>${output-dir}</outputDirectory>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>3.2.3</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                        <configuration>
-                            <!--suppress UnresolvedMavenProperty -->
-<!--                            <createSourcesJar>${shadeSourcesJar}</createSourcesJar>-->
-                            <filters>
-                                <filter>
-                                    <artifact>org.spigotmc:minecraft-server</artifact>
-                                    <excludes>
-                                        <exclude>com/google/common/**</exclude>
-                                        <exclude>com/google/gson/**</exclude>
-                                        <exclude>com/google/thirdparty/**</exclude>
-                                    </excludes>
-                                </filter>
-                                <filter>
-                                    <artifact>org.eclipse.sisu:org.eclipse.sisu.inject</artifact>
-                                    <excludes>
-                                        <exclude>META-INF/services/javax.annotation.processing.Processor</exclude>
-                                    </excludes>
-                                </filter>
-                            </filters>
-                            <relocations>
-                                <!-- Cannot be relocated as it breaks translation property keys -->
-                                <!--
-                                <relocation>
-                                    <pattern>joptsimple</pattern>
-                                    <shadedPattern>org.bukkit.craftbukkit.libs.joptsimple</shadedPattern>
-                                </relocation>
-                                -->
-                                <relocation>
-                                    <pattern>jline</pattern>
-                                    <shadedPattern>org.bukkit.craftbukkit.libs.jline</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>it.unimi</pattern>
-                                    <shadedPattern>org.bukkit.craftbukkit.libs.it.unimi</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>org.apache.commons.codec</pattern>
-                                    <shadedPattern>org.bukkit.craftbukkit.libs.org.apache.commons.codec</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>org.apache.commons.io</pattern>
-                                    <shadedPattern>org.bukkit.craftbukkit.libs.org.apache.commons.io</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>org.apache.commons.lang3</pattern>
-                                    <shadedPattern>org.bukkit.craftbukkit.libs.org.apache.commons.lang3</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>org.apache.http</pattern>
-                                    <shadedPattern>org.bukkit.craftbukkit.libs.org.apache.http</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>org.apache.maven</pattern>
-                                    <shadedPattern>org.bukkit.craftbukkit.libs.org.apache.maven</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>org.codehaus.plexus</pattern>
-                                    <shadedPattern>org.bukkit.craftbukkit.libs.org.codehaus.plexus</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>org.eclipse.aether</pattern>
-                                    <shadedPattern>org.bukkit.craftbukkit.libs.org.eclipse.aether</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>org.eclipse.sisu</pattern>
-                                    <shadedPattern>org.bukkit.craftbukkit.libs.org.eclipse.sisu</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>org.objectweb.asm</pattern>
-                                    <shadedPattern>org.bukkit.craftbukkit.libs.org.objectweb.asm</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>org.bukkit.craftbukkit</pattern>
-                                    <shadedPattern>org.bukkit.craftbukkit.v${minecraft_version}</shadedPattern>
-                                    <excludes>
-                                        <exclude>org.bukkit.craftbukkit.Main*</exclude>
-                                    </excludes>
-                                </relocation>
-                                <relocation>
-                                    <pattern>com/mojang/math/(.+/)*(.*)</pattern>
-                                    <shadedPattern>net/minecraft/server/v${minecraft_version}/$2</shadedPattern>
-                                    <rawString>true</rawString>
-                                </relocation>
-                                <relocation>
-                                    <pattern>net/minecraft/(.+/)*(.*)</pattern>
-                                    <shadedPattern>net/minecraft/server/v${minecraft_version}/$2</shadedPattern>
-                                    <rawString>true</rawString>
-                                </relocation>
-                            </relocations>
-                            <transformers>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                                    <resource>META-INF/services/java.sql.Driver</resource>
-                                </transformer>
-                            </transformers>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -357,6 +230,20 @@
     </build>
 
     <profiles>
+        <profile>
+            <id>Gotzi</id>
+            <properties>
+                <output-dir>C:\Users\Elias\Desktop\Minestrum Test</output-dir>
+                <output-lib-dir>C:\Users\Elias\Desktop\Minestrum Test\lib</output-lib-dir>
+            </properties>
+        </profile>
+        <profile>
+            <id>Brot</id>
+            <properties>
+                <output-dir>C:\Users\Elias\Desktop\Minestrum Test</output-dir>
+                <output-lib-dir>C:\Users\Elias\Desktop\Minestrum Test\lib</output-lib-dir>
+            </properties>
+        </profile>
         <profile>
             <id>shadeSourcesJar</id>
             <properties>

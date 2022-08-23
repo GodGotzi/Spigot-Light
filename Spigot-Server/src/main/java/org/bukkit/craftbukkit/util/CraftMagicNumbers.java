@@ -247,12 +247,15 @@ public final class CraftMagicNumbers implements UnsafeValues {
         return stack;
     }
 
+    @Deprecated
     private static File getBukkitDataPackFolder() {
-        return new File(MinecraftServer.getServer().a(SavedFile.DATAPACKS).toFile(), "bukkit");
+        return null;
     }
 
+    @Deprecated
     @Override
     public Advancement loadAdvancement(NamespacedKey key, String advancement) {
+        /*
         if (Bukkit.getAdvancement(key) != null) {
             throw new IllegalArgumentException("Advancement " + key + " already exists.");
         }
@@ -281,13 +284,16 @@ public final class CraftMagicNumbers implements UnsafeValues {
             }
         }
 
+        */
+
         return null;
     }
 
+    @Deprecated
     @Override
     public boolean removeAdvancement(NamespacedKey key) {
-        File file = new File(getBukkitDataPackFolder(), "data" + File.separator + key.getNamespace() + File.separator + "advancements" + File.separator + key.getKey() + ".json");
-        return file.delete();
+        //File file = new File(getBukkitDataPackFolder(), "data" + File.separator + key.getNamespace() + File.separator + "advancements" + File.separator + key.getKey() + ".json");
+        return false;
     }
 
     private static final List<String> SUPPORTED_API = Arrays.asList("1.13", "1.14", "1.15", "1.16");

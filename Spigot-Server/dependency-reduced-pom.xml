@@ -82,6 +82,7 @@
               </manifestSection>
             </manifestSections>
           </archive>
+          <outputDirectory>${output-dir}</outputDirectory>
         </configuration>
       </plugin>
       <plugin>
@@ -214,6 +215,20 @@
     </plugins>
   </build>
   <profiles>
+    <profile>
+      <id>Gotzi</id>
+      <properties>
+        <output-dir>C:\Users\Elias\Desktop\Minestrum Test</output-dir>
+        <output-lib-dir>C:\Users\Elias\Desktop\Minestrum Test\lib</output-lib-dir>
+      </properties>
+    </profile>
+    <profile>
+      <id>Brot</id>
+      <properties>
+        <output-dir>C:\Users\Elias\Desktop\Minestrum Test</output-dir>
+        <output-lib-dir>C:\Users\Elias\Desktop\Minestrum Test\lib</output-lib-dir>
+      </properties>
+    </profile>
     <profile>
       <id>shadeSourcesJar</id>
       <properties>

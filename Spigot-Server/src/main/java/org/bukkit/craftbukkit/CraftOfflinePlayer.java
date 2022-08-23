@@ -28,13 +28,10 @@ import org.bukkit.plugin.Plugin;
 public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializable {
     private final GameProfile profile;
     private final CraftServer server;
-    private final WorldNBTStorage storage;
 
     protected CraftOfflinePlayer(CraftServer server, GameProfile profile) {
         this.server = server;
         this.profile = profile;
-        this.storage = server.console.worldNBTStorage;
-
     }
 
     public GameProfile getProfile() {
@@ -46,27 +43,10 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
         return getPlayer() != null;
     }
 
+    @Deprecated
     @Override
     public String getName() {
-        Player player = getPlayer();
-        if (player != null) {
-            return player.getName();
-        }
-
-        // This might not match lastKnownName but if not it should be more correct
-        if (profile.getName() != null) {
-            return profile.getName();
-        }
-
-        NBTTagCompound data = getBukkitData();
-
-        if (data != null) {
-            if (data.hasKey("lastKnownName")) {
-                return data.getString("lastKnownName");
-            }
-        }
-
-        return null;
+        return "";
     }
 
     @Override
@@ -180,82 +160,26 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
         return hash;
     }
 
-    private NBTTagCompound getData() {
-        return storage.getPlayerData(getUniqueId().toString());
-    }
-
-    private NBTTagCompound getBukkitData() {
-        NBTTagCompound result = getData();
-
-        if (result != null) {
-            if (!result.hasKey("bukkit")) {
-                result.set("bukkit", new NBTTagCompound());
-            }
-            result = result.getCompound("bukkit");
-        }
-
-        return result;
-    }
-
-    private File getDataFile() {
-        return new File(storage.getPlayerDir(), getUniqueId() + ".dat");
-    }
-
     @Override
     public long getFirstPlayed() {
-        Player player = getPlayer();
-        if (player != null) return player.getFirstPlayed();
-
-        NBTTagCompound data = getBukkitData();
-
-        if (data != null) {
-            if (data.hasKey("firstPlayed")) {
-                return data.getLong("firstPlayed");
-            } else {
-                File file = getDataFile();
-                return file.lastModified();
-            }
-        } else {
-            return 0;
-        }
+        return -1;
     }
 
+    @Deprecated
     @Override
     public long getLastPlayed() {
-        Player player = getPlayer();
-        if (player != null) return player.getLastPlayed();
-
-        NBTTagCompound data = getBukkitData();
-
-        if (data != null) {
-            if (data.hasKey("lastPlayed")) {
-                return data.getLong("lastPlayed");
-            } else {
-                File file = getDataFile();
-                return file.lastModified();
-            }
-        } else {
-            return 0;
-        }
+        return -1;
     }
 
+    @Deprecated
     @Override
     public boolean hasPlayedBefore() {
-        return getData() != null;
+        return false;
     }
 
+    @Deprecated
     @Override
     public Location getBedSpawnLocation() {
-        NBTTagCompound data = getData();
-        if (data == null) return null;
-
-        if (data.hasKey("SpawnX") && data.hasKey("SpawnY") && data.hasKey("SpawnZ")) {
-            String spawnWorld = data.getString("SpawnWorld");
-            if (spawnWorld.equals("")) {
-                spawnWorld = server.getWorlds().get(0).getName();
-            }
-            return new Location(server.getWorld(spawnWorld), data.getInt("SpawnX"), data.getInt("SpawnY"), data.getInt("SpawnZ"));
-        }
         return null;
     }
 

@@ -279,7 +279,7 @@ public class Convertable {
 
         public WorldNBTStorage b() {
             this.checkSession();
-            return new WorldNBTStorage(this, Convertable.this.f);
+            return new WorldNBTStorage(Convertable.this.f);
         }
 
         public boolean isConvertable() {

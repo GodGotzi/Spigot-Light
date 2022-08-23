@@ -729,14 +729,16 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         getHandle().setSprinting(sprinting);
     }
 
+    @Deprecated
     @Override
     public void loadData() {
-        server.getHandle().playerFileData.load(getHandle());
+        //server.getHandle().playerFileData.load(getHandle());
     }
 
+    @Deprecated
     @Override
     public void saveData() {
-        server.getHandle().playerFileData.save(getHandle());
+        //server.getHandle().playerFileData.save(getHandle());
     }
 
     @Deprecated

@@ -183,7 +183,6 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
     public static final File b = new File("usercache.json");
     public static final WorldSettings c = new WorldSettings("Demo World", EnumGamemode.SURVIVAL, false, EnumDifficulty.NORMAL, false, new GameRules(), DataPackConfiguration.a);
     public Convertable.ConversionSession convertable;
-    public final WorldNBTStorage worldNBTStorage;
     private final MojangStatisticsGenerator snooper = new MojangStatisticsGenerator("server", this, SystemUtils.getMonotonicMillis());
     private final List<Runnable> tickables = Lists.newArrayList();
     private final GameProfilerSwitcher m;
@@ -310,10 +309,9 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
         // this.serverConnection = new ServerConnection(this); // Spigot
         this.worldLoadListenerFactory = worldloadlistenerfactory;
         this.convertable = convertable_conversionsession;
-        this.worldNBTStorage = convertable_conversionsession.b();
         this.dataConverterManager = datafixer;
         this.customFunctionData = new CustomFunctionData(this, datapackresources.a());
-        this.ak = new DefinedStructureManager(datapackresources.h(), convertable_conversionsession, datafixer);
+        this.ak = new DefinedStructureManager(datapackresources.h(), datafixer);
         this.serverThread = thread;
         this.executorService = SystemUtils.f();
         // CraftBukkit start
@@ -326,21 +324,6 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
             Main.useJline = false;
         }
 
-        try {
-            reader = new ConsoleReader(System.in, System.out);
-            reader.setExpandEvents(false); // Avoid parsing exceptions for uncommonly used event designators
-        } catch (Throwable e) {
-            try {
-                // Try again with jline disabled for Windows users without C++ 2008 Redistributable
-                System.setProperty("jline.terminal", "jline.UnsupportedTerminal");
-                System.setProperty("user.language", "en");
-                Main.useJline = false;
-                reader = new ConsoleReader(System.in, System.out);
-                reader.setExpandEvents(false);
-            } catch (IOException ex) {
-                LOGGER.warn((String) null, ex);
-            }
-        }
         Runtime.getRuntime().addShutdownHook(new org.bukkit.craftbukkit.util.ServerShutdownThread(this));
     }
     // CraftBukkit end
@@ -752,21 +735,6 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
         // CraftBukkit end
     }
 
-    protected void loadResourcesZip() {
-        File file = this.convertable.getWorldFolder(SavedFile.RESOURCES_ZIP).toFile();
-
-        if (file.isFile()) {
-            String s = this.convertable.getLevelName();
-
-            try {
-                this.setResourcePack("level://" + URLEncoder.encode(s, StandardCharsets.UTF_8.toString()) + "/" + "resources.zip", "");
-            } catch (UnsupportedEncodingException unsupportedencodingexception) {
-                MinecraftServer.LOGGER.warn("Something went wrong url encoding {}", s);
-            }
-        }
-
-    }
-
     public EnumGamemode getGamemode() {
         return this.saveData.getGameType();
     }
@@ -1010,12 +978,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
             } finally {
                 org.spigotmc.WatchdogThread.doStop(); // Spigot
                 // CraftBukkit start - Restore terminal to original settings
-                try {
-                    reader.getTerminal().restore();
-                } catch (Exception ignored) {
-                }
                 // CraftBukkit end
-                this.exit();
             }
 
         }
@@ -1459,7 +1422,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
         if (this.playerList != null) {
             mojangstatisticsgenerator.a("players_current", this.getPlayerCount());
             mojangstatisticsgenerator.a("players_max", this.getMaxPlayers());
-            mojangstatisticsgenerator.a("players_seen", this.worldNBTStorage.getSeenPlayers().length);
+            mojangstatisticsgenerator.a("players_seen", 0);
         }
 
         mojangstatisticsgenerator.a("uses_auth", this.onlineMode);
@@ -1556,10 +1519,6 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
 
     public PlayerList getPlayerList() {
         return this.playerList;
-    }
-
-    public void a(PlayerList playerlist) {
-        this.playerList = playerlist;
     }
 
     public abstract boolean n();
