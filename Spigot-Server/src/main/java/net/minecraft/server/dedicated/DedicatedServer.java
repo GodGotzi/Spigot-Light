@@ -193,7 +193,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
         this.setResourcePack(dedicatedserverproperties.resourcePack, this.ba());
         this.setMotd(dedicatedserverproperties.motd);
         this.setForceGamemode(dedicatedserverproperties.forceGamemode);
-        super.setIdleTimeout((Integer) dedicatedserverproperties.playerIdleTimeout.get());
+        super.setIdleTimeout(dedicatedserverproperties.getPlayerIdleTimeout());
         this.i(dedicatedserverproperties.enforceWhitelist);
         // this.saveData.setGameType(dedicatedserverproperties.gamemode); // CraftBukkit - moved to world loading
         DedicatedServer.LOGGER.info("Default game type: {}", dedicatedserverproperties.gamemode);
@@ -535,9 +535,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
     @Override
     public void setIdleTimeout(int i) {
         super.setIdleTimeout(i);
-        this.propertyManager.setProperty((dedicatedserverproperties) -> {
-            return (DedicatedServerProperties) dedicatedserverproperties.playerIdleTimeout.set(this.getCustomRegistry(), i);
-        });
+        this.propertyManager.getProperties().setPlayerIdleTimeout(i);
     }
 
     @Override
@@ -679,9 +677,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
     }
 
     public void setHasWhitelist(boolean flag) {
-        this.propertyManager.setProperty((dedicatedserverproperties) -> {
-            return (DedicatedServerProperties) dedicatedserverproperties.whiteList.set(this.getCustomRegistry(), flag);
-        });
+        this.propertyManager.getProperties().setWhiteList(flag);
     }
 
     @Override

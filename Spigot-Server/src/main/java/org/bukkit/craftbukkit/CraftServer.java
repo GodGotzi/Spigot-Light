@@ -619,7 +619,7 @@ public final class CraftServer implements Server {
 
     @Override
     public String getWorldType() {
-        return this.getProperties().properties.getProperty("level-type");
+        return this.getProperties().getProperty("level-type");
     }
 
     @Override
@@ -652,7 +652,7 @@ public final class CraftServer implements Server {
 
     @Override
     public boolean hasWhitelist() {
-        return this.getProperties().whiteList.get();
+        return this.getProperties().isWhiteList();
     }
 
     // NOTE: Temporary calls through to server.properies until its replaced
@@ -777,7 +777,7 @@ public final class CraftServer implements Server {
         configuration = YamlConfiguration.loadConfiguration(getConfigFile());
         commandsConfiguration = YamlConfiguration.loadConfiguration(getCommandsConfigFile());
 
-        console.propertyManager = new DedicatedServerSettings(console.getCustomRegistry(), console.options);
+        //console.propertyManager = new DedicatedServerSettings(console.getCustomRegistry());
         DedicatedServerProperties config = console.propertyManager.getProperties();
 
         console.setPVP(config.pvp);

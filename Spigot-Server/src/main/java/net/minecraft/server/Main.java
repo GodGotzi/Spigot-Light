@@ -99,31 +99,7 @@ public class Main {
             DispenserRegistry.c();
             SystemUtils.l();
             IRegistryCustom.Dimension iregistrycustom_dimension = IRegistryCustom.b();
-            java.nio.file.Path java_nio_file_path = Paths.get("server.properties");
-            DedicatedServerSettings dedicatedserversettings = new DedicatedServerSettings(iregistrycustom_dimension, optionset); // CraftBukkit - CLI argument support
-
-            dedicatedserversettings.save();
-            java.nio.file.Path java_nio_file_path1 = Paths.get("eula.txt");
-            EULA eula = new EULA(java_nio_file_path1);
-
-            if (optionset.has("initSettings")) { // CraftBukkit
-                Main.LOGGER.info("Initialized '{}' and '{}'", java_nio_file_path.toAbsolutePath(), java_nio_file_path1.toAbsolutePath());
-                return;
-            }
-
-            // Spigot Start
-            boolean eulaAgreed = Boolean.getBoolean( "com.mojang.eula.agree" );
-            if ( eulaAgreed )
-            {
-                System.err.println( "You have used the Spigot command line EULA agreement flag." );
-                System.err.println( "By using this setting you are indicating your agreement to Mojang's EULA (https://account.mojang.com/documents/minecraft_eula)." );
-                System.err.println( "If you do not agree to the above EULA please stop your server and remove this flag immediately." );
-            }
-            // Spigot End
-            if (!eula.a() && !eulaAgreed) { // Spigot
-                Main.LOGGER.info("You need to agree to the EULA in order to run the server. Go to eula.txt for more info.");
-                return;
-            }
+            DedicatedServerSettings dedicatedserversettings = new DedicatedServerSettings(iregistrycustom_dimension); // CraftBukkit - CLI argument support
 
             File file = (File) optionset.valueOf("universe"); // CraftBukkit
             YggdrasilAuthenticationService yggdrasilauthenticationservice = new YggdrasilAuthenticationService(Proxy.NO_PROXY);
