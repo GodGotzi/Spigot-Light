@@ -25,7 +25,9 @@ public class FakeServer {
     public void run() {
         //TODO run and handle with data
 
-        OptionSet options = null;
+
+
+        OptionSet options = new ;
         // Do you love Java using + and ! as string based identifiers? I sure do!
         String path = new File(".").getAbsolutePath();
         if (path.contains("!") || path.contains("+")) {
@@ -58,7 +60,7 @@ public class FakeServer {
 
             System.out.println("Loading libraries, please wait...");
 
-            net.minecraft.server.Main.main(options);
+            net.minecraft.server.Main.start(data, options);
         } catch (Throwable t) {
             t.printStackTrace();
         }

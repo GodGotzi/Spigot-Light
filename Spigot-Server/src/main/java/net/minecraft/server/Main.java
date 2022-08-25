@@ -15,6 +15,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.BooleanSupplier;
 
 import joptsimple.OptionSet;
+import net.gotzi.spigot.data.ServerData;
 import net.minecraft.CrashReport;
 import net.minecraft.SystemUtils;
 import net.minecraft.commands.CommandDispatcher;
@@ -47,7 +48,7 @@ public class Main {
 
     public Main() {}
 
-    public static void main(final OptionSet optionset) { // CraftBukkit - replaces main(String[] astring)
+    public static void start(final ServerData serverData, OptionSet optionset) { // CraftBukkit - replaces main(String[] astring)
         /* CraftBukkit start - Replace everything
         OptionParser optionparser = new OptionParser();
         OptionSpec<Void> optionspec = optionparser.accepts("nogui");
@@ -97,11 +98,6 @@ public class Main {
 
             MinecraftServer.convertWorld(convertable_conversionsession);
             DataPackConfiguration datapackconfiguration = convertable_conversionsession.e();
-            boolean flag = optionset.has("safeMode");
-
-            if (flag) {
-                Main.LOGGER.warn("Safe mode active, only vanilla datapack will be loaded");
-            }
 
             Main.LOGGER.info("asd4");
 
